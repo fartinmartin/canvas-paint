@@ -1,0 +1,32 @@
+{
+  "name": "canvas-paint",
+  "version": "1.0.0",
+  "description": "Bare-bones example of how to create a library using Rollup and TypeScript.",
+  "main": "dist/canvas-paint.min.js",
+  "module": "dist/canvas-paint.esm.js",
+  "browser": "dist/canvas-paint.umd.js",
+  "scripts": {
+    "build": "NODE_ENV=production rollup -c",
+    "dev": "rollup -c -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zollero/canvas-paint.git"
+  },
+  "keywords": [],
+  "author": "Martin Lindberg",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fartinmartin/canvas-paint/issues"
+  },
+  "homepage": "https://github.com/fartinmartin/canvas-paint#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.6",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "rollup": "^2.58.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.4.4"
+  }
+}
