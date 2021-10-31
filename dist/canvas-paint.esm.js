@@ -24,6 +24,8 @@ var __assign = function() {
     return __assign.apply(this, arguments);
 };
 
+var isTouch = function () { return "ontouchstart" in window.document; };
+
 var Paint = /** @class */ (function () {
     function Paint(element, options) {
         // merges options with defaults
@@ -46,7 +48,7 @@ var Paint = /** @class */ (function () {
         // set bg
         this._context.fillStyle = this._options.background;
         this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
-        // set "brush"
+        // set "brush" (should this be left to the user of the lib?)
         this._context.lineCap = this._context.lineJoin = "round";
         this.setColor(this._options.brush.color);
         this.setSize(this._options.brush.size);
@@ -66,9 +68,9 @@ var Paint = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(Paint.prototype, "mode", {
+    Object.defineProperty(Paint.prototype, "history", {
         get: function () {
-            return this._mode;
+            return this._history;
         },
         enumerable: false,
         configurable: true
@@ -81,6 +83,99 @@ var Paint = /** @class */ (function () {
     };
     Paint.prototype.setColor = function (color) {
         this._context.strokeStyle = color;
+        this._context.fillStyle = color;
+    };
+    // use this to load artwork (can/should this be alias'd with "load()"?)
+    Paint.prototype.setHistory = function (history) {
+        this._history = history;
+    };
+    Paint.prototype.handleEvent = function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        switch (event.type) {
+            case "mousedown":
+            case "touchstart":
+                this._onInputDown(event);
+                break;
+            case "mousemove":
+            case "touchmove":
+                this._onInputMove(event);
+                break;
+            case "mouseup":
+            case "touchend":
+                this._onInputUp();
+                break;
+            case "mouseout":
+            case "touchcancel":
+            case "gesturestart":
+                this._onInputCancel();
+                break;
+        }
+    };
+    Paint.prototype._bindEvents = function () {
+        var events = isTouch()
+            ? ["touchstart", "touchmove", "touchend", "touchcancel", "gesturestart"]
+            : ["mousedown", "mousemove", "mouseup", "mouseout"];
+        for (var _i = 0, events_1 = events; _i < events_1.length; _i++) {
+            var ev = events_1[_i];
+            this._canvas.addEventListener(ev, this, false);
+        }
+    };
+    Paint.prototype._unbindEvents = function () {
+        var events = isTouch()
+            ? ["touchstart", "touchmove", "touchend", "touchcancel", "gesturestart"]
+            : ["mousedown", "mousemove", "mouseup", "mouseout"];
+        for (var _i = 0, events_2 = events; _i < events_2.length; _i++) {
+            var ev = events_2[_i];
+            this._canvas.removeEventListener(ev, this, false);
+        }
+    };
+    Paint.prototype._drawFrame = function () {
+        // this._timer = requestAnimationFrame(() => this._drawFrame());
+        // if (!this._isDrawing) return;
+        // const isSameCoords =
+        //   this._coords.old.x === this._coords.current.x &&
+        //   this._coords.old.y === this._coords.current.y;
+        // const currentMid = getMidInputCoords(
+        //   this._coords.old,
+        //   this._coords.current
+        // );
+        // const ctx = this._ctx;
+        // ctx.beginPath();
+        // ctx.moveTo(currentMid.x, currentMid.y);
+        // ctx.quadraticCurveTo(
+        //   this._coords.old.x,
+        //   this._coords.old.y,
+        //   this._coords.oldMid.x,
+        //   this._coords.oldMid.y
+        // );
+        // ctx.stroke();
+        // this._coords.old = this._coords.current;
+        // this._coords.oldMid = currentMid;
+        // if (!isSameCoords) this._ev.trigger("draw", this._coords.current);
+    };
+    Paint.prototype._onInputDown = function (event) {
+        this._isDrawing = true;
+        // const coords = getInputCoords(event, this._$el);
+        // this._coords.current = this._coords.old = coords;
+        // this._coords.oldMid = getMidInputCoords(this._coords.old, coords);
+        // this._ev.trigger("drawBegin", this._coords.current);
+    };
+    Paint.prototype._onInputMove = function (event) {
+        // this._coords.current = getInputCoords(ev, this._$el);
+    };
+    Paint.prototype._onInputUp = function () {
+        // this._ev.trigger("drawEnd", this._coords.current);
+        // this._saveHistory();
+        this._isDrawing = false;
+    };
+    Paint.prototype._onInputCancel = function () {
+        if (this._isDrawing) ;
+        this._isDrawing = false;
+    };
+    Paint.prototype._saveHistory = function () {
+        // this._history.save(this.toDataURL());
+        // this._ev.trigger("save", this._history.value);
     };
     return Paint;
 }());
