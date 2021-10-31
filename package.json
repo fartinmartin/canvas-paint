@@ -1,17 +1,18 @@
 {
   "name": "canvas-paint",
-  "version": "1.0.0",
-  "description": "Bare-bones example of how to create a library using Rollup and TypeScript.",
+  "version": "0.0.1",
+  "description": "A simple HTML canvas library with flood fill and eraser support, undo history, drawing playback, and more!",
   "main": "dist/canvas-paint.min.js",
   "module": "dist/canvas-paint.esm.js",
   "browser": "dist/canvas-paint.umd.js",
   "scripts": {
-    "build": "NODE_ENV=production rollup -c",
-    "dev": "rollup -c -w"
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "demo": "live-server --entry-file='/demo/index.html'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zollero/canvas-paint.git"
+    "url": "git+https://github.com/fartinmartin/canvas-paint.git"
   },
   "keywords": [],
   "author": "Martin Lindberg",
@@ -22,7 +23,6 @@
   "homepage": "https://github.com/fartinmartin/canvas-paint#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
-    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@rollup/plugin-typescript": "^8.3.0",
     "rollup": "^2.58.3",

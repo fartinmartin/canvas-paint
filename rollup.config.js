@@ -1,11 +1,9 @@
 import commonjs from "@rollup/plugin-commonjs";
-import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
+
 import { terser } from "rollup-plugin-terser";
 import { name, main, module, browser } from "./package.json";
-
-const isProduction = process.env.NODE_ENV === "production";
 
 export default {
   input: "./src/index.ts",
@@ -14,29 +12,31 @@ export default {
       file: main,
       name: main,
       format: "cjs",
-      plugins: [isProduction && terser()],
+      plugins: [terser()],
+      sourcemap: true,
     },
     {
       file: module,
       name: name,
       format: "es",
+      sourcemap: true,
     },
     {
       file: browser,
       name: name,
       format: "umd",
+      sourcemap: true,
     },
   ],
 
   plugins: [
-    json(),
     resolve({
       jsnext: true,
       main: true,
     }),
     typescript({
       typescript: require("typescript"),
-      sourceMap: !isProduction,
+      sourceMap: true,
     }),
     commonjs({
       include: "node_modules/**",

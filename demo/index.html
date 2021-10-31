@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CanvasPaint Test</title>
+  </head>
+
+  <body>
+    <div class="toolbar">
+      <input type="color" onchange="paint.setColor(this.value)" />
+      <button onclick="paint.setMode('draw')">draw</button>
+      <button onclick="paint.setMode('erase')">erase</button>
+      <button onclick="paint.setMode('fill')">fill</button>
+      <span class="spacer"></span>
+      <input type="range" onchange="paint.setSize(this.value)" />
+      <span class="spacer"></span>
+      <button onclick="paint.undo()">undo</button>
+      <button onclick="paint.redo()">redo</button>
+      <button onclick="paint.clear()">clear</button>
+      <span class="spacer"></span>
+      <button onclick="paint.play()">play</button>
+      <button onclick="paint.pause()">pause</button>
+      <button onclick="paint.stop()">stop</button>
+      <span class="spacer"></span>
+      <button onclick="console.log(paint.getHistory())">log history</button>
+      <button onclick="paint.detach()">detach</button>
+    </div>
+
+    <canvas></canvas>
+
+    <script type="module">
+      import { canvasPaint } from "../dist/canvas-paint.esm.js";
+
+      window.paint = canvasPaint(document.querySelector("canvas"), {
+        width: 1080,
+        height: 360,
+        displayScale: 0.5,
+        responsive: true,
+      });
+    </script>
+
+    <style>
+      body {
+        display: grid;
+        place-items: center;
+        height: 100vh;
+        background: tomato;
+        margin: 0;
+      }
+
+      .toolbar {
+        position: absolute;
+        top: 0;
+        width: 100%;
+
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        background: rgba(255, 255, 255, 0.5);
+        padding: 0.75rem 1rem 1rem 1rem;
+        box-sizing: border-box;
+      }
+
+      .toolbar > * {
+        height: 2rem;
+        margin: 0.25rem 0.25rem 0.25rem 0;
+      }
+
+      .spacer {
+        margin-left: 0.5rem !important;
+        margin-right: 0.5rem !important;
+      }
+    </style>
+  </body>
+</html>
