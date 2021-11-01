@@ -13,7 +13,7 @@
       <button onclick="paint.setMode('erase')">erase</button>
       <button onclick="paint.setMode('fill')">fill</button>
       <span class="spacer"></span>
-      <input type="range" onchange="paint.setSize(this.value)" />
+      <input type="range" onchange="paint.setSize(this.value)" max="10" />
       <span class="spacer"></span>
       <button onclick="paint.undo()">undo</button>
       <button onclick="paint.redo()">redo</button>
@@ -38,6 +38,12 @@
         displayScale: 0.5,
         responsive: true,
       });
+
+      paint.observer.on("drawBegin", () => console.log("drawBegin"));
+      paint.observer.on("drawing", (e) => console.log("drawing", e));
+      paint.observer.on("drawEnd", () => console.log("drawEnd"));
+
+      console.log(paint.observer);
     </script>
 
     <style>

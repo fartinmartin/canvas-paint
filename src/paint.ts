@@ -1,4 +1,5 @@
-import { isTouch } from "./utils/dom";
+import { isTouch, getInputCoords } from "./utils/dom";
+import { Eve } from "./utils/eve";
 
 interface Options {
   width?: number;
@@ -15,17 +16,43 @@ interface Options {
 
 type Mode = "draw" | "erase" | "fill";
 
+type Point = {
+  coords: { x: number; y: number };
+  size: number; // these could theoretically change mid-path
+  color: number; // these could theoretically change mid-path
+};
+
+type Path = {
+  points: Point[];
+  mode: Mode;
+};
+
 export default class Paint {
-  private _options: Options;
   private _canvas: HTMLCanvasElement;
   private _context: CanvasRenderingContext2D;
-  private _mode: Mode;
+  private _options: Options;
+
   private _scale: number;
   private _dpr: number;
+
+  private _mode: Mode;
   private _isDrawing: boolean;
+  private _eve: Eve;
+  private _timer: any;
+
+  private _coords: {
+    past: { x: number; y: number };
+    current: { x: number; y: number };
+  };
+
   private _history: {
-    steps: [];
-    current: number;
+    past: [];
+    present: number;
+    future: [];
+    meta: {
+      scale: number;
+      date: Date;
+    };
   };
 
   constructor(element: HTMLCanvasElement, options: Options) {
@@ -37,7 +64,7 @@ export default class Paint {
       displayScale: 1,
       background: "white",
       brush: {
-        size: 1,
+        size: 3,
         color: "#000000",
         mode: "draw",
       },
@@ -47,8 +74,18 @@ export default class Paint {
     // set locals
     this._canvas = element;
     this._context = this._canvas.getContext("2d");
+    this._timer = null;
+
     this._dpr = options.dpr ? window.devicePixelRatio : 1;
     this._scale = options.displayScale ? this._options.displayScale : 1;
+
+    this._eve = new Eve();
+
+    this._isDrawing = false;
+    this._coords = {
+      past: { x: 0, y: 0 },
+      current: { x: 0, y: 0 },
+    };
 
     // set scale
     this._canvas.style.width = this._options.width * this._scale + "px";
@@ -59,14 +96,17 @@ export default class Paint {
     this._context.scale(this._dpr, this._dpr);
 
     // set bg
-    this._context.fillStyle = this._options.background;
-    this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+    this.clear();
+    this._canvas.style.background = this._options.background;
 
     // set "brush" (should this be left to the user of the lib?)
     this._context.lineCap = this._context.lineJoin = "round";
     this.setColor(this._options.brush.color);
     this.setSize(this._options.brush.size);
     this.setMode("draw");
+
+    this._bindEvents();
+    this._drawFrame();
   }
 
   get canvas() {
@@ -81,12 +121,18 @@ export default class Paint {
     return this._history;
   }
 
+  get observer() {
+    return this._eve; // this is really cool
+  }
+
   setMode(mode: Mode) {
     this._mode = mode;
+    this._context.globalCompositeOperation =
+      this._mode === "erase" ? "destination-out" : "source-over";
   }
 
   setSize(size: number) {
-    this._context.lineWidth = (size | 0 || 1) * this._dpr;
+    this._context.lineWidth = ((size | 0 || 1) * this._dpr) / this._scale;
   }
 
   setColor(color: string) {
@@ -99,7 +145,7 @@ export default class Paint {
     this._history = history;
   }
 
-  handleEvent(event) {
+  _handleEvents(event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -131,7 +177,7 @@ export default class Paint {
       : ["mousedown", "mousemove", "mouseup", "mouseout"];
 
     for (const ev of events) {
-      this._canvas.addEventListener(ev, this, false);
+      this._canvas.addEventListener(ev, (e) => this._handleEvents(e), false);
     }
   }
 
@@ -141,67 +187,90 @@ export default class Paint {
       : ["mousedown", "mousemove", "mouseup", "mouseout"];
 
     for (const ev of events) {
-      this._canvas.removeEventListener(ev, this, false);
+      this._canvas.removeEventListener(ev, (e) => this._handleEvents(e), false);
     }
   }
 
   _drawFrame() {
-    // this._timer = requestAnimationFrame(() => this._drawFrame());
-    // if (!this._isDrawing) return;
-    // const isSameCoords =
-    //   this._coords.old.x === this._coords.current.x &&
-    //   this._coords.old.y === this._coords.current.y;
-    // const currentMid = getMidInputCoords(
-    //   this._coords.old,
-    //   this._coords.current
-    // );
-    // const ctx = this._ctx;
-    // ctx.beginPath();
-    // ctx.moveTo(currentMid.x, currentMid.y);
-    // ctx.quadraticCurveTo(
-    //   this._coords.old.x,
-    //   this._coords.old.y,
-    //   this._coords.oldMid.x,
-    //   this._coords.oldMid.y
-    // );
-    // ctx.stroke();
-    // this._coords.old = this._coords.current;
-    // this._coords.oldMid = currentMid;
-    // if (!isSameCoords) this._ev.trigger("draw", this._coords.current);
+    this._timer = requestAnimationFrame(() => this._drawFrame());
+
+    if (!this._isDrawing) return;
+
+    const isSameCoords =
+      this._coords.past.x === this._coords.current.x &&
+      this._coords.past.y === this._coords.current.y;
+
+    const ctx = this._context;
+    const coords = this._coords;
+
+    if (this._mode !== "fill") {
+      ctx.beginPath();
+      ctx.moveTo(coords.past.x, coords.past.y);
+      ctx.lineTo(coords.current.x, coords.current.y);
+      ctx.stroke();
+    } else {
+      this._fill();
+    }
+
+    this._coords.past = this._coords.current;
   }
 
   _onInputDown(event) {
     this._isDrawing = true;
-
-    // const coords = getInputCoords(event, this._$el);
-    // this._coords.current = this._coords.old = coords;
-    // this._coords.oldMid = getMidInputCoords(this._coords.old, coords);
-
-    // this._ev.trigger("drawBegin", this._coords.current);
+    this._drawBegin(event);
   }
 
   _onInputMove(event) {
-    // this._coords.current = getInputCoords(ev, this._$el);
+    if (this._isDrawing) this._drawing(event);
   }
 
   _onInputUp() {
-    // this._ev.trigger("drawEnd", this._coords.current);
-    // this._saveHistory();
-
+    this._drawEnd();
     this._isDrawing = false;
   }
 
   _onInputCancel() {
-    if (this._isDrawing) {
-      // this._ev.trigger("drawEnd", this._coords.current);
-      // this._saveHistory();
-    }
-
+    if (this._isDrawing) this._drawEnd();
     this._isDrawing = false;
+  }
+
+  _drawBegin(event) {
+    const coords = getInputCoords(event, this._canvas);
+    this._coords.current = this._coords.past = coords;
+    this._eve.trigger("drawBegin", this._coords.current);
+  }
+
+  _drawing(event) {
+    this._coords.current = getInputCoords(event, this._canvas);
+
+    if (this._mode !== "fill") {
+      this._eve.trigger("drawing", this._coords.current);
+      // TODO: should push a Point to [???] on every event (using history.ts ?)
+    } else {
+      // TODO: should push a Point to [???] on first event (using history.ts ?)
+    }
+  }
+
+  _drawEnd() {
+    this._eve.trigger("drawEnd", this._coords.current);
+    this._saveHistory();
+    // TODO: should push an Point[] + brush mode to [???] on every event (using history.ts ?)
+  }
+
+  _fill() {
+    this._isDrawing = false;
+    console.log("fill");
+    // TODO: implement flood fill
   }
 
   _saveHistory() {
     // this._history.save(this.toDataURL());
     // this._ev.trigger("save", this._history.value);
+  }
+
+  clear() {
+    this._context.fillStyle = this._options.background;
+    this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+    this._saveHistory(); // TODO: should push a [???] to [???] on event (using history.ts ?)
   }
 }
