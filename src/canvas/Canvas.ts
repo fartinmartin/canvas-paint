@@ -1,6 +1,7 @@
 import { Coordinates } from "lazy-brush";
 import { Brush } from "../classes/Brush";
 import { Path } from "../classes/Path";
+import { Point } from "../classes/Point";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
@@ -73,16 +74,17 @@ export class CanvasDraw extends Canvas {
 	}
 
 	draw(path: Path, delay?: number) {
-		this.setBrush();
 		this.brush.mode !== "fill"
 			? this.drawPath(path, delay)
 			: this.drawFill(path);
 	}
 
-	protected setBrush() {
-		// needs to be passed brush settings! otherwise undo/redo will use CURRENT settings
-		// also, does it need to be set per point?
-		const { mode, size, cap, color } = this.brush;
+	protected setBrush(path: Path, point: Point) {
+		// this could/should be cleaner.. should point contain mode and cap?
+		const mode = path.mode;
+		const size = point.size;
+		const cap = path.cap;
+		const color = point.color;
 
 		this.context.globalCompositeOperation =
 			mode === "erase" ? "destination-out" : "source-over";
@@ -100,6 +102,7 @@ export class CanvasDraw extends Canvas {
 		let p1 = path.points[0]; // cur?
 		let p2 = path.points[1]; // old?
 
+		this.setBrush(path, p1);
 		this.context.moveTo(p2.x, p2.y);
 		this.context.beginPath();
 
@@ -121,7 +124,9 @@ export class CanvasDraw extends Canvas {
 
 	protected drawDot(path: Path) {
 		const { size, cap } = this.brush;
-		const { x, y } = path.points[0];
+		const p1 = path.points[0];
+		const { x, y } = p1;
+		this.setBrush(path, p1);
 
 		this.context.beginPath();
 

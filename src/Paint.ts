@@ -10,6 +10,7 @@ import { Brush, Cap, Mode } from "./classes/Brush";
 import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
+import { Point } from "./classes/Point";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -63,13 +64,18 @@ export class Paint {
 
 		// when brush moves, if brush.isDrawinging, update current path
 		const path = this.brush.events.on("move", (brush: any) => {
-			if (brush.isDrawing) this.path.points.push(brush.coords);
+			if (brush.isDrawing)
+				this.path.points.push(
+					new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
+				);
 		});
 
 		// handle edge case of "click" for dots
 		const dot = this.brush.events.on("down", (brush: any) => {
 			this.temp.draw(this.path);
-			this.path.points.push(brush.coords);
+			this.path.points.push(
+				new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
+			);
 		});
 
 		// when brush releases, if brush.isDrawinging, commit path to artboard and histroy
