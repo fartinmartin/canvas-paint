@@ -7,7 +7,7 @@ import { Brush } from "../classes/Brush";
 export type UIOptions = {};
 
 export class UI extends Canvas {
-	catenary = new Catenary();
+	private catenary = new Catenary();
 
 	constructor(
 		protected root: HTMLElement,

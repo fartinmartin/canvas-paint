@@ -8,6 +8,9 @@ import { CanvasOptions } from "./canvas/Canvas";
 import { namespace } from "./utils/uuid";
 import { Brush } from "./classes/Brush";
 
+import { CommandStack } from "./classes/Command";
+import { EventEmitter } from "./classes/Events";
+
 export type PaintOptions = CanvasOptions &
 	UIOptions &
 	GridOptions & {
@@ -17,22 +20,23 @@ export type PaintOptions = CanvasOptions &
 
 export class Paint {
 	id: string;
-	styles: CSSStyleSheet;
+	private subscriptions: (() => void)[];
 
 	ui: UI;
 	temp: Temp;
 	artboard: Artboard;
 	grid: Grid;
 
-	lazy = new LazyBrush();
+	private lazy = new LazyBrush();
 	brush: Brush;
 
-	subscriptions: (() => void)[];
+	history = new CommandStack();
+	events = new EventEmitter();
 
-	constructor(public root: HTMLElement, public options: PaintOptions) {
+	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.id = namespace + "container";
 		this.root.classList.add(this.id);
-		this.styles = this.createStyles()!;
+		this.createStyles();
 
 		this.brush = new Brush(root, this.lazy, options);
 
@@ -44,7 +48,7 @@ export class Paint {
 		this.subscriptions = this.setSubscriptions();
 	}
 
-	setSubscriptions() {
+	private setSubscriptions() {
 		// 1. when mouse/brush moves, update UI
 		const ui = this.brush.subscribe(() => {
 			const pointer = this.lazy.getPointerCoordinates();
@@ -66,10 +70,14 @@ export class Paint {
 		this.subscriptions.forEach((unsub) => unsub());
 	}
 
-	createStyles() {
-		// ⚠️ TODO: check if stylesheet with this ID exists!
+	private createStyles() {
+		const id = namespace + "base-styles";
+
+		const exists = document.getElementById(id);
+		if (exists) return;
+
 		const styleSheet = document.createElement("style");
-		styleSheet.id = namespace + "base-styles";
+		styleSheet.id = id;
 
 		const target = document.styleSheets[0]?.ownerNode;
 		document.head.insertBefore(styleSheet, target);
