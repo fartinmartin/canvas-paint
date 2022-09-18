@@ -27,7 +27,6 @@ export class Paint {
 	artboard: Artboard;
 	grid: Grid;
 
-	private lazy = new LazyBrush(); // should this be initialized in Brush instead??
 	brush: Brush;
 
 	history = new CommandStack();
@@ -38,9 +37,9 @@ export class Paint {
 		this.root.classList.add(this.id);
 		this.createStyles();
 
-		this.brush = new Brush(root, this.lazy, options);
+		this.brush = new Brush(root, options);
 
-		this.ui = new UI(root, this.lazy, this.brush, options);
+		this.ui = new UI(root, this.brush, options);
 		this.temp = new Temp(root, this.brush, options);
 		this.artboard = new Artboard(root, options);
 		this.grid = new Grid(root, options);
@@ -51,8 +50,8 @@ export class Paint {
 	private setSubscriptions() {
 		// 1. when mouse/brush moves, update UI
 		const ui = this.brush.subscribe(() => {
-			const pointer = this.lazy.getPointerCoordinates();
-			const coords = this.lazy.getBrushCoordinates();
+			const pointer = this.brush.lazy.getPointerCoordinates();
+			const coords = this.brush.lazy.getBrushCoordinates();
 			this.ui.drawInterface(pointer, coords);
 		});
 

@@ -1,4 +1,4 @@
-import { Coordinates, LazyBrush } from "lazy-brush"; // @ts-ignore
+import { Coordinates } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
 
 import { Canvas, CanvasOptions } from "./Canvas";
@@ -11,7 +11,6 @@ export class UI extends Canvas {
 
 	constructor(
 		protected root: HTMLElement,
-		private lazy: LazyBrush,
 		private brush: Brush,
 		options?: CanvasOptions
 	) {
@@ -41,7 +40,7 @@ export class UI extends Canvas {
 		this.context.fill();
 
 		//Draw catenary
-		if (this.lazy.isEnabled()) {
+		if (this.brush.lazy.isEnabled()) {
 			this.context.beginPath();
 			this.context.lineWidth = 2; // could be passed by user's option object (in the constructor)
 			this.context.lineCap = "round";
@@ -51,7 +50,7 @@ export class UI extends Canvas {
 				this.context,
 				brush,
 				pointer,
-				this.lazy.radius
+				this.brush.lazy.radius
 			);
 			this.context.stroke();
 		}

@@ -20,12 +20,12 @@ export class Brush {
 	private _mode: Mode = "draw";
 	private _cap: Cap = "round";
 
-	constructor(
-		private root: HTMLElement,
-		private lazy: LazyBrush,
-		options: BrushOptions
-	) {
-		console.log(options);
+	private _lazy = new LazyBrush(); // should be private? I think so because we need to be able to publish() anytime lazy settings change!
+	// tricky though, because we also need to access lazy methods within OUR classes..
+	// maybe we privatize Paint.brush (with Paint.brush.lazy) and publicize a version of Paint.brush w/o lazy?
+
+	constructor(private root: HTMLElement, options: BrushOptions) {
+		// console.log(options);
 
 		this.root.addEventListener("mousemove", (e) =>
 			this.handleMove(e.offsetX, e.offsetY)
@@ -47,21 +47,13 @@ export class Brush {
 		return this._size;
 	}
 
-	get color() {
-		return this._color;
-	}
-
-	get mode() {
-		return this._mode;
-	}
-
-	get cap() {
-		return this._cap;
-	}
-
 	set size(value: number) {
 		if (value > 0) this._size = value;
 		this.publish();
+	}
+
+	get color() {
+		return this._color;
 	}
 
 	set color(value: string) {
@@ -70,15 +62,35 @@ export class Brush {
 		this.publish();
 	}
 
+	get mode() {
+		return this._mode;
+	}
+
 	set mode(value: Mode) {
 		this._mode = value;
 		this.publish();
+	}
+
+	get cap() {
+		return this._cap;
 	}
 
 	set cap(value: Cap) {
 		this._cap = value;
 		this.publish();
 	}
+
+	get lazy() {
+		// TODO: needs to be limited in what parts of lazy are returned! no updating methods, because we need to publish() when those happen (via the set lazy() method)
+		// could maybe use a proxy?
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+		return this._lazy;
+	}
+
+	// set lazy(options: {}) {
+	// 	// TODO: how to do this? 🤔
+	// 	this._lazy;
+	// }
 
 	private payload() {
 		return {
@@ -91,7 +103,7 @@ export class Brush {
 	}
 
 	private handleMove(x: number, y: number) {
-		this.lazy.update({ x: x, y: y });
+		this._lazy.update({ x, y });
 		this.publish();
 	}
 
