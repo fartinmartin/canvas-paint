@@ -1,26 +1,16 @@
+import { Cap, Mode } from "./Brush";
 import { Point } from "./Point";
 
 export class Path {
 	constructor(
-		private _points: Point[],
-		private _mode: "draw" | "erase" | "fill" = "draw",
-		private _scale: number = 1
+		public points: Point[],
+		public mode: Mode = "draw",
+		public scale: number = 1,
+		public cap: Cap = "round"
 	) {}
 
-	get points() {
-		return this._points;
-	}
-
-	get mode() {
-		return this._mode;
-	}
-
-	get scale() {
-		return this._scale;
-	}
-
 	factor(destination: number) {
-		return this._scale / destination;
+		return this.scale / destination;
 	}
 }
 

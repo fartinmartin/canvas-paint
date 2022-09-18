@@ -72,12 +72,16 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
-	draw(path: Path) {
+	draw(path: Path, delay?: number) {
 		this.setBrush();
-		this.brush.mode !== "fill" ? this.drawPath(path) : this.drawFill(path);
+		this.brush.mode !== "fill"
+			? this.drawPath(path, delay)
+			: this.drawFill(path);
 	}
 
 	protected setBrush() {
+		// needs to be passed brush settings! otherwise undo/redo will use CURRENT settings
+		// also, does it need to be set per point?
 		const { mode, size, cap, color } = this.brush;
 
 		this.context.globalCompositeOperation =
@@ -87,12 +91,10 @@ export class CanvasDraw extends Canvas {
 		this.context.lineCap = cap;
 		this.context.strokeStyle = color;
 		this.context.fillStyle = color;
-
-		// set lazy brush settings?? // this.brush.lazy.setRadius(radius) // if enabled=true radius=0?
 	}
 
 	protected async drawPath(path: Path, delay?: number) {
-		if (path.points.length && path.points.length < 2) this.drawDot(path);
+		if (path.points.length && path.points.length < 2) return this.drawDot(path);
 		if (path.points.length < 2) return;
 
 		let p1 = path.points[0]; // cur?
@@ -118,8 +120,6 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawDot(path: Path) {
-		console.log("dot!");
-
 		const { size, cap } = this.brush;
 		const { x, y } = path.points[0];
 

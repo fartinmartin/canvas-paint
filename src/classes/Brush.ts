@@ -30,6 +30,7 @@ export class Brush {
 
 		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
 		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
+		// this.root.addEventListener("mouseleave", (e) => this.handleUp(e)); // this commits a new line every time mouse leaves
 	}
 
 	get isDrawing() {
@@ -97,6 +98,7 @@ export class Brush {
 	}
 
 	private handleMove(x: number, y: number) {
+		// this._lazy.update({ x: Math.round(x), y: Math.round(y) });
 		this._lazy.update({ x, y });
 		this.events.dispatch("move", this.payload());
 	}

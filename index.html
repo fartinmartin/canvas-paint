@@ -13,10 +13,28 @@
 	</head>
 	<body>
 		<div id="app"></div>
+		<div id="controls"></div>
 		<script type="module">
 			import { Paint } from "/src/index.ts";
+
 			const app = document.getElementById("app");
 			const demo = new Paint(app, { width: 200, height: 200 });
+
+			const controls = document.getElementById("controls");
+			[
+				{ label: "undo", callback: () => demo.undo() },
+				{ label: "redo", callback: () => demo.redo() },
+				{ label: "setColor", callback: () => demo.setColor("green") },
+				{ label: "setSize", callback: () => demo.setSize(20) },
+				{ label: "setMode", callback: () => demo.setMode("erase") },
+				// { label: "setCap", callback: () => demo.setCap() },
+				{ label: "setRadius", callback: () => demo.setRadius() },
+			].forEach((method) => {
+				const button = document.createElement("button");
+				button.innerText = method.label;
+				button.addEventListener("click", method.callback);
+				controls.appendChild(button);
+			});
 		</script>
 	</body>
 </html>

@@ -9,14 +9,15 @@ export class CommandStack {
 	}
 
 	get state() {
-		const latestPath = this._stack[this._stack.length - 1];
-		return JSON.parse(latestPath);
+		const latestState = this._stack[this._stack.length - 1];
+		return JSON.parse(latestState) as Path[];
 	}
 
 	execute(command: Command) {
 		const commandPath = command.execute(this.state);
 		const stringPath = JSON.stringify(commandPath);
 		this._stack.push(stringPath);
+		this._redo = []; // we don't want to allow stale redo states AFTER we commit new Paths!
 	}
 
 	undo() {
@@ -29,6 +30,14 @@ export class CommandStack {
 		if (this._redo.length >= 1) {
 			this._stack.push(this._redo.pop()!);
 		}
+	}
+
+	get canUndo() {
+		return this._stack.length > 1;
+	}
+
+	get canRedo() {
+		return !!this._redo.length;
 	}
 }
 

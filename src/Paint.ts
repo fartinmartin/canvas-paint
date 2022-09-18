@@ -1,13 +1,12 @@
-import { LazyBrush } from "lazy-brush";
-
 import { UI, UIOptions } from "./canvas/UI";
 import { Temp } from "./canvas/Temp";
 import { Artboard } from "./canvas/Artboard";
 import { Grid, GridOptions } from "./canvas/Grid";
 import { CanvasOptions } from "./canvas/Canvas";
-import { namespace } from "./utils/uuid";
-import { Brush } from "./classes/Brush";
 
+import { namespace } from "./utils/uuid";
+
+import { Brush, Cap, Mode } from "./classes/Brush";
 import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
@@ -50,19 +49,19 @@ export class Paint {
 	}
 
 	private addListeners() {
-		// when mouse/brush moves, update UI canvas
+		// when brush moves, update UI canvas
 		const ui = this.brush.events.on("move", () => {
 			const pointer = this.brush.lazy.getPointerCoordinates();
 			const coords = this.brush.lazy.getBrushCoordinates();
 			this.ui.drawInterface(pointer, coords);
 		});
 
-		// when mouse/brush moves, if brush.isDrawinging, update current path
+		// when brush moves, if brush.isDrawinging, update current path
 		const temp = this.brush.events.on("move", (brush: any) => {
 			if (brush.isDrawing) this.temp.draw(this.path);
 		});
 
-		// when mouse/brush moves, if brush.isDrawinging, update current path
+		// when brush moves, if brush.isDrawinging, update current path
 		const path = this.brush.events.on("move", (brush: any) => {
 			if (brush.isDrawing) this.path.points.push(brush.coords);
 		});
@@ -73,7 +72,7 @@ export class Paint {
 			this.path.points.push(brush.coords);
 		});
 
-		// when mouse/brush releases, if brush.isDrawinging, commit path to artboard and histroy
+		// when brush releases, if brush.isDrawinging, commit path to artboard and histroy
 		const commit = this.brush.events.on("up", (brush: any) => {
 			this.temp.clear();
 			this.artboard.draw(this.path);
@@ -86,6 +85,40 @@ export class Paint {
 
 	removeListeners() {
 		this.listeners.forEach((remove) => remove());
+	}
+
+	undo() {
+		if (!this.history.canUndo) return;
+		this.history.undo();
+		this.artboard.clear();
+		this.drawToState();
+	}
+
+	redo() {
+		if (!this.history.canRedo) return;
+		this.history.redo();
+		this.artboard.clear();
+		this.drawToState();
+	}
+
+	drawToState(delay?: number) {
+		for (const path of this.history.state) this.artboard.draw(path, delay);
+	}
+
+	setMode(value: Mode) {
+		this.brush.mode = value;
+	}
+
+	setSize(value: number) {
+		this.brush.size = value;
+	}
+
+	setColor(value: string) {
+		this.brush.color = value;
+	}
+
+	setCap(value: Cap) {
+		this.brush.cap = value;
 	}
 
 	private createStyles() {

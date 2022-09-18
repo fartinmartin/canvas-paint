@@ -3,7 +3,7 @@ type Listener = { event: string; callback: Function };
 export class EventEmitter {
 	private _listeners: Listener[] = [];
 
-	on(event: string, callback: Function) {
+	on<T>(event: string, callback: (data: T) => void) {
 		this._listeners.push({ event, callback });
 		return () =>
 			(this._listeners = this._listeners.filter((listener) => {
