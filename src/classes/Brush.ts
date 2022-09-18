@@ -1,26 +1,23 @@
 import { LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
+import { EventEmitter } from "./Events";
 
 export type Mode = "draw" | "erase" | "fill";
 export type Cap = "butt" | "round" | "square";
 export type Join = "round" | "bevel" | "miter";
 
 export type BrushOptions = {};
-export type BrushUpdate = {
-	isPressing: boolean;
-};
 
 export class Brush {
-	private subscribers: Set<(brush: BrushUpdate) => void> = new Set();
-	private _isPressing = false; // is mousedown
-	private _isDrawing = false; // is mousedown & lazy has updated!
+	public events = new EventEmitter();
+	private _isDrawing = false;
 
 	private _size = 5;
 	private _color = "tomato";
 	private _mode: Mode = "draw";
 	private _cap: Cap = "round";
 
-	private _lazy = new LazyBrush(); // should be private? I think so because we need to be able to publish() anytime lazy settings change!
+	private _lazy = new LazyBrush({ radius: 0 }); // should be private? I think so because we need to be able to publish() anytime lazy settings change!
 	// tricky though, because we also need to access lazy methods within OUR classes..
 	// maybe we privatize Paint.brush (with Paint.brush.lazy) and publicize a version of Paint.brush w/o lazy?
 
@@ -31,16 +28,12 @@ export class Brush {
 			this.handleMove(e.offsetX, e.offsetY)
 		);
 
-		this.root.addEventListener("mousedown", () => this.handleDown());
-		this.root.addEventListener("mouseup", () => this.handleUp());
+		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
+		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
 	}
 
 	get isDrawing() {
 		return this._isDrawing;
-	}
-
-	get isPressing() {
-		return this._isPressing;
 	}
 
 	get size() {
@@ -49,7 +42,7 @@ export class Brush {
 
 	set size(value: number) {
 		if (value > 0) this._size = value;
-		this.publish();
+		this.events.dispatch("brushUpdate", this.payload());
 	}
 
 	get color() {
@@ -59,7 +52,7 @@ export class Brush {
 	set color(value: string) {
 		// if color2k can parse..
 		this._color = value;
-		this.publish();
+		this.events.dispatch("brushUpdate", this.payload());
 	}
 
 	get mode() {
@@ -68,7 +61,7 @@ export class Brush {
 
 	set mode(value: Mode) {
 		this._mode = value;
-		this.publish();
+		this.events.dispatch("brushUpdate", this.payload());
 	}
 
 	get cap() {
@@ -77,7 +70,7 @@ export class Brush {
 
 	set cap(value: Cap) {
 		this._cap = value;
-		this.publish();
+		this.events.dispatch("brushUpdate", this.payload());
 	}
 
 	get lazy() {
@@ -94,36 +87,30 @@ export class Brush {
 
 	private payload() {
 		return {
-			isPressing: this.isPressing,
+			isDrawing: this.isDrawing,
 			size: this.size,
 			color: this.color,
 			mode: this.mode,
 			cap: this.cap,
+			coords: this._lazy.brush.toObject(),
 		};
 	}
 
 	private handleMove(x: number, y: number) {
 		this._lazy.update({ x, y });
-		this.publish();
+		this.events.dispatch("move", this.payload());
 	}
 
-	private handleDown() {
-		this._isPressing = true;
-		this.publish();
+	private handleDown(event: MouseEvent) {
+		event.preventDefault();
+		this._isDrawing = true;
+		this.events.dispatch("down", this.payload());
 	}
 
-	private handleUp() {
-		this._isPressing = false;
-		this.publish();
-	}
-
-	subscribe(callback: (brush: BrushUpdate) => void) {
-		this.subscribers.add(callback);
-		return () => this.subscribers.delete(callback);
-	}
-
-	private publish() {
-		this.subscribers.forEach((callback) => callback(this.payload()));
+	private handleUp(event: MouseEvent) {
+		event.preventDefault();
+		this._isDrawing = false;
+		this.events.dispatch("up", this.payload());
 	}
 }
 // pubsub this boi!

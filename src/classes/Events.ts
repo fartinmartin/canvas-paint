@@ -5,15 +5,13 @@ export class EventEmitter {
 
 	on(event: string, callback: Function) {
 		this._listeners.push({ event, callback });
+		return () =>
+			(this._listeners = this._listeners.filter((listener) => {
+				return !(listener.event === event && listener.callback === callback);
+			}));
 	}
 
-	off(event: string, callback: Function) {
-		this._listeners = this._listeners.filter((listener) => {
-			return !(listener.event === event && listener.callback === callback);
-		});
-	}
-
-	trigger(event: string, data: unknown) {
+	dispatch<T>(event: string, data: T) {
 		this._listeners
 			.filter((listener) => listener.event === event)
 			.forEach(({ callback }) => callback(data));

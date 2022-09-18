@@ -8,8 +8,9 @@ import { CanvasOptions } from "./canvas/Canvas";
 import { namespace } from "./utils/uuid";
 import { Brush } from "./classes/Brush";
 
-import { CommandStack } from "./classes/Command";
+import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
+import { Path } from "./classes/Path";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -20,7 +21,7 @@ export type PaintOptions = CanvasOptions &
 
 export class Paint {
 	id: string;
-	private subscriptions: (() => void)[];
+	private listeners: (() => void)[];
 
 	ui: UI;
 	temp: Temp;
@@ -28,9 +29,10 @@ export class Paint {
 	grid: Grid;
 
 	brush: Brush;
-
 	history = new CommandStack();
 	events = new EventEmitter();
+
+	path = new Path([], "draw", 1);
 
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.id = namespace + "container";
@@ -41,34 +43,49 @@ export class Paint {
 
 		this.ui = new UI(root, this.brush, options);
 		this.temp = new Temp(root, this.brush, options);
-		this.artboard = new Artboard(root, options);
+		this.artboard = new Artboard(root, this.brush, options);
 		this.grid = new Grid(root, options);
 
-		this.subscriptions = this.setSubscriptions();
+		this.listeners = this.addListeners();
 	}
 
-	private setSubscriptions() {
-		// 1. when mouse/brush moves, update UI
-		const ui = this.brush.subscribe(() => {
+	private addListeners() {
+		// when mouse/brush moves, update UI canvas
+		const ui = this.brush.events.on("move", () => {
 			const pointer = this.brush.lazy.getPointerCoordinates();
 			const coords = this.brush.lazy.getBrushCoordinates();
 			this.ui.drawInterface(pointer, coords);
 		});
 
-		// 2. when mouse/brush moves, if brush.isPressing, update temp
-		const temp = this.brush.subscribe((brush) => {
-			if (brush.isPressing) {
-				// console.log(brush);
-			}
+		// when mouse/brush moves, if brush.isDrawinging, update current path
+		const temp = this.brush.events.on("move", (brush: any) => {
+			if (brush.isDrawing) this.temp.draw(this.path);
 		});
 
-		// trigger "draw" "erase" "fill" "move" "down" "up"/"cancel"/"newPath" "undo" "redo"  events
+		// when mouse/brush moves, if brush.isDrawinging, update current path
+		const path = this.brush.events.on("move", (brush: any) => {
+			if (brush.isDrawing) this.path.points.push(brush.coords);
+		});
 
-		return [ui, temp];
+		// handle edge case of "click" for dots
+		const dot = this.brush.events.on("down", (brush: any) => {
+			this.temp.draw(this.path);
+			this.path.points.push(brush.coords);
+		});
+
+		// when mouse/brush releases, if brush.isDrawinging, commit path to artboard and histroy
+		const commit = this.brush.events.on("up", (brush: any) => {
+			this.temp.clear();
+			this.artboard.draw(this.path);
+			this.history.execute(new AddPath(this.path));
+			this.path = new Path([], "draw", 1);
+		});
+
+		return [ui, temp, path, dot, commit];
 	}
 
-	removeSubscriptions() {
-		this.subscriptions.forEach((unsub) => unsub());
+	removeListeners() {
+		this.listeners.forEach((remove) => remove());
 	}
 
 	private createStyles() {

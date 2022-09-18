@@ -56,6 +56,10 @@ export class Canvas {
 	protected resize() {
 		// TODO: but this is what will be called when container is observed to have changed? I think?
 	}
+
+	clear() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	}
 }
 
 export class CanvasDraw extends Canvas {
@@ -68,8 +72,7 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
-	protected draw(path: Path) {
-		if (!this.brush.isDrawing) return;
+	draw(path: Path) {
 		this.setBrush();
 		this.brush.mode !== "fill" ? this.drawPath(path) : this.drawFill(path);
 	}
@@ -115,6 +118,8 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawDot(path: Path) {
+		console.log("dot!");
+
 		const { size, cap } = this.brush;
 		const { x, y } = path.points[0];
 
