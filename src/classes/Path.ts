@@ -7,7 +7,7 @@ export class Path {
 		private _scale: number = 1
 	) {}
 
-	get point() {
+	get points() {
 		return this._points;
 	}
 

@@ -27,7 +27,7 @@ export class Paint {
 	artboard: Artboard;
 	grid: Grid;
 
-	private lazy = new LazyBrush();
+	private lazy = new LazyBrush(); // should this be initialized in Brush instead??
 	brush: Brush;
 
 	history = new CommandStack();
@@ -41,7 +41,7 @@ export class Paint {
 		this.brush = new Brush(root, this.lazy, options);
 
 		this.ui = new UI(root, this.lazy, this.brush, options);
-		this.temp = new Temp(root, options);
+		this.temp = new Temp(root, this.brush, options);
 		this.artboard = new Artboard(root, options);
 		this.grid = new Grid(root, options);
 

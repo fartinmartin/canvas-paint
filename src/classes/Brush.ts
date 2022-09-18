@@ -2,6 +2,9 @@ import { LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
 
 export type Mode = "draw" | "erase" | "fill";
+export type Cap = "butt" | "round" | "square";
+export type Join = "round" | "bevel" | "miter";
+
 export type BrushOptions = {};
 export type BrushUpdate = {
 	isPressing: boolean;
@@ -9,11 +12,13 @@ export type BrushUpdate = {
 
 export class Brush {
 	private subscribers: Set<(brush: BrushUpdate) => void> = new Set();
-	private _isPressing = false;
+	private _isPressing = false; // is mousedown
+	private _isDrawing = false; // is mousedown & lazy has updated!
 
 	private _size = 5;
 	private _color = "tomato";
 	private _mode: Mode = "draw";
+	private _cap: Cap = "round";
 
 	constructor(
 		private root: HTMLElement,
@@ -28,6 +33,10 @@ export class Brush {
 
 		this.root.addEventListener("mousedown", () => this.handleDown());
 		this.root.addEventListener("mouseup", () => this.handleUp());
+	}
+
+	get isDrawing() {
+		return this._isDrawing;
 	}
 
 	get isPressing() {
@@ -46,6 +55,10 @@ export class Brush {
 		return this._mode;
 	}
 
+	get cap() {
+		return this._cap;
+	}
+
 	set size(value: number) {
 		if (value > 0) this._size = value;
 		this.publish();
@@ -62,12 +75,18 @@ export class Brush {
 		this.publish();
 	}
 
+	set cap(value: Cap) {
+		this._cap = value;
+		this.publish();
+	}
+
 	private payload() {
 		return {
 			isPressing: this.isPressing,
 			size: this.size,
 			color: this.color,
 			mode: this.mode,
+			cap: this.cap,
 		};
 	}
 
