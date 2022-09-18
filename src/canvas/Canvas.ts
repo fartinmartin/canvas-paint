@@ -1,7 +1,3 @@
-// these extend Canvas
-// ui layer
-// artboard;
-
 import { namespace, uuid } from "../utils/uuid";
 
 export type CanvasOptions = {
@@ -37,7 +33,7 @@ export class Canvas {
 		return this.root.appendChild(canvas);
 	}
 
-	setDPI() {
+	protected setDPI() {
 		// get current CSS size of the canvas
 		const { width, height } = this.canvas.getBoundingClientRect();
 
@@ -53,7 +49,7 @@ export class Canvas {
 		this.canvas.style.height = height + "px";
 	}
 
-	resize() {
+	protected resize() {
 		// TODO: but this is what will be called when container is observed to have changed? I think?
 	}
 }

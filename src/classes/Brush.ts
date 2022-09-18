@@ -20,6 +20,8 @@ export class Brush {
 		private lazy: LazyBrush,
 		options: BrushOptions
 	) {
+		console.log(options);
+
 		this.root.addEventListener("mousemove", (e) =>
 			this.handleMove(e.offsetX, e.offsetY)
 		);

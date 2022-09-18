@@ -63,6 +63,8 @@ export class Paint {
 			}
 		});
 
+		// trigger "draw" "erase" "fill" "move" "down" "up"/"cancel"/"newPath" "undo" "redo"  events
+
 		return [ui, temp];
 	}
 
