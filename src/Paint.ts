@@ -21,7 +21,6 @@ export type PaintOptions = CanvasOptions &
 
 export class Paint {
 	id: string;
-	private listeners: (() => void)[];
 
 	ui: UI;
 	temp: Temp;
@@ -32,7 +31,7 @@ export class Paint {
 	history = new CommandStack();
 	events = new EventEmitter();
 
-	path = new Path([], "draw", 1);
+	points: Point[] = [];
 
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.id = namespace + "container";
@@ -46,68 +45,70 @@ export class Paint {
 		this.artboard = new Artboard(root, this.brush, options);
 		this.grid = new Grid(root, options);
 
-		this.listeners = this.addListeners();
+		this.addListeners();
 	}
 
 	private addListeners() {
 		// when brush moves, update UI canvas
-		const ui = this.brush.events.on("move", () => {
+		this.brush.events.on("move", () => {
 			const pointer = this.brush.lazy.getPointerCoordinates();
 			const coords = this.brush.lazy.getBrushCoordinates();
 			this.ui.drawInterface(pointer, coords);
 		});
 
-		// when brush moves, if brush.isDrawinging, update current path
-		const temp = this.brush.events.on("move", (brush: any) => {
-			if (brush.isDrawing) this.temp.draw(this.path);
+		// when brush moves, if brush.isDrawing, update current path on temp canvas
+		this.brush.events.on("move", (brush: any) => {
+			if (brush.isDrawing) this.temp.draw(this.getPath());
 		});
 
-		// when brush moves, if brush.isDrawinging, update current path
-		const path = this.brush.events.on("move", (brush: any) => {
+		// when brush moves, if brush.isDrawing, update current path/points array
+		this.brush.events.on("move", (brush: any) => {
 			if (brush.isDrawing)
-				this.path.points.push(
+				this.points.push(
 					new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
 				);
 		});
 
 		// handle edge case of "click" for dots
-		const dot = this.brush.events.on("down", (brush: any) => {
-			this.temp.draw(this.path);
-			this.path.points.push(
+		this.brush.events.on("down", (brush: any) => {
+			this.temp.draw(this.getPath());
+			this.points.push(
 				new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
 			);
 		});
 
 		// when brush releases, if brush.isDrawinging, commit path to artboard and histroy
-		const commit = this.brush.events.on("up", (brush: any) => {
+		this.brush.events.on("up", () => {
 			this.temp.clear();
-			this.artboard.draw(this.path);
-			this.history.execute(new AddPath(this.path));
-			this.path = new Path([], "draw", 1);
+			this.artboard.draw(this.getPath());
+			this.history.execute(new AddPath(this.getPath()));
+			this.points = [];
 		});
-
-		return [ui, temp, path, dot, commit];
 	}
 
 	removeListeners() {
-		this.listeners.forEach((remove) => remove());
+		this.brush.events.removeAllListeners();
+	}
+
+	getPath() {
+		return new Path(this.points, this.brush.mode, 1); // todo where is scale at??
 	}
 
 	undo() {
 		if (!this.history.canUndo) return;
 		this.history.undo();
 		this.artboard.clear();
-		this.drawToState();
+		this.drawHistory();
 	}
 
 	redo() {
 		if (!this.history.canRedo) return;
 		this.history.redo();
 		this.artboard.clear();
-		this.drawToState();
+		this.drawHistory();
 	}
 
-	drawToState(delay?: number) {
+	drawHistory(delay?: number) {
 		for (const path of this.history.state) this.artboard.draw(path, delay);
 	}
 

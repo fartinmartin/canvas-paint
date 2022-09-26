@@ -20,10 +20,13 @@ export class UI extends Canvas {
 	drawInterface(pointer: Coordinates, brush: Coordinates) {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+		const { x, y } = brush;
+		const c = Math.PI * 2;
+
 		// Draw brush point
 		this.context.beginPath();
 		this.context.fillStyle = this.brush.color;
-		this.context.arc(brush.x, brush.y, this.brush.size, 0, Math.PI * 2, true);
+		this.context.arc(x, y, this.brush.size / 2, 0, c, true);
 		this.context.fill();
 
 		// Draw mouse point
@@ -32,9 +35,9 @@ export class UI extends Canvas {
 		this.context.arc(
 			pointer.x,
 			pointer.y,
-			4, // could be passed by user's option object (in the constructor)
+			4, // could be passed by user's option object (in the constructor) remember, this is a radius value not width value!
 			0,
-			Math.PI * 2,
+			c,
 			true
 		);
 		this.context.fill();
@@ -59,11 +62,11 @@ export class UI extends Canvas {
 		this.context.beginPath();
 		this.context.fillStyle = "#222222"; // could be passed by user's option object (in the constructor)
 		this.context.arc(
-			brush.x,
-			brush.y,
-			2, // could be passed by user's option object (in the constructor)
+			x,
+			y,
+			2, // could be passed by user's option object (in the constructor) remember, this is a radius value not width value!
 			0,
-			Math.PI * 2,
+			c,
 			true
 		);
 		this.context.fill();

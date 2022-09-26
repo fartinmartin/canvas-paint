@@ -74,9 +74,7 @@ export class CanvasDraw extends Canvas {
 	}
 
 	draw(path: Path, delay?: number) {
-		this.brush.mode !== "fill"
-			? this.drawPath(path, delay)
-			: this.drawFill(path);
+		path.mode !== "fill" ? this.drawPath(path, delay) : this.drawFill(path);
 	}
 
 	protected setBrush(path: Path, point: Point) {
@@ -86,13 +84,15 @@ export class CanvasDraw extends Canvas {
 		const cap = path.cap;
 		const color = point.color;
 
+		// we need to see the temp canvas paint erasing paths
+		const isTemp = this.canvas.classList.contains("canvas-paint_temp");
 		this.context.globalCompositeOperation =
-			mode === "erase" ? "destination-out" : "source-over";
+			isTemp || mode !== "erase" ? "source-over" : "destination-out";
 
 		this.context.lineWidth = size;
 		this.context.lineCap = cap;
-		this.context.strokeStyle = color;
-		this.context.fillStyle = color;
+		this.context.strokeStyle = mode === "erase" ? "white" : color; // could/should be canvas's background color
+		this.context.fillStyle = mode === "erase" ? "white" : color; // could/should be canvas's background color
 	}
 
 	protected async drawPath(path: Path, delay?: number) {
