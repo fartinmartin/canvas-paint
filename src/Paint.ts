@@ -11,6 +11,7 @@ import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
+import { createStyles } from "./utils/styles";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -36,7 +37,7 @@ export class Paint {
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.id = namespace + "container";
 		this.root.classList.add(this.id);
-		this.createStyles();
+		createStyles(this.id, namespace, this.options);
 
 		this.brush = new Brush(root, options);
 
@@ -126,28 +127,5 @@ export class Paint {
 
 	setCap(value: Cap) {
 		this.brush.cap = value;
-	}
-
-	private createStyles() {
-		const id = namespace + "base-styles";
-
-		const exists = document.getElementById(id);
-		if (exists) return;
-
-		const styleSheet = document.createElement("style");
-		styleSheet.id = id;
-
-		const target = document.styleSheets[0]?.ownerNode;
-		document.head.insertBefore(styleSheet, target);
-
-		styleSheet.sheet!.insertRule(`.${this.id} { display: grid; }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} { width: ${this.options.width}px; height: ${this.options.height}px; }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} > canvas { grid-area: 1 / 1; }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} > canvas[class*="ui"] { z-index: 100 }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} > canvas[class*="temp"] { z-index: 80 }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} > canvas[class*="artboard"] { z-index: 60 }`); // prettier-ignore
-		styleSheet.sheet!.insertRule(`.${this.id} > canvas[class*="grid"] { z-index: 40 }`); // prettier-ignore
-
-		return styleSheet.sheet;
 	}
 }

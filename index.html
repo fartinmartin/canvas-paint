@@ -6,8 +6,12 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>canvas-paint</title>
 		<style>
+			html {
+				background: rgb(50, 50, 50);
+			}
 			#app {
 				outline: 1px solid salmon;
+				margin-bottom: 0.5rem;
 			}
 		</style>
 	</head>
@@ -18,7 +22,11 @@
 			import { Paint } from "/src/index.ts";
 
 			const app = document.getElementById("app");
-			const demo = new Paint(app, { width: 200, height: 200 });
+			const demo = new Paint(app, {
+				width: 200,
+				height: 200,
+				bgColor: "whitesmoke",
+			});
 
 			const controls = document.getElementById("controls");
 			[

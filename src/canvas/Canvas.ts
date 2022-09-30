@@ -8,6 +8,7 @@ import { waitFor } from "../utils/waitFor";
 export type CanvasOptions = {
 	width: number;
 	height: number;
+	bgColor: string;
 };
 
 export class Canvas {
@@ -16,9 +17,9 @@ export class Canvas {
 	protected id: string;
 
 	constructor(
-		protected root: HTMLElement,
-		className: string,
-		options?: CanvasOptions
+		public root: HTMLElement,
+		protected className: string,
+		protected options: CanvasOptions
 	) {
 		this.canvas = this.createCanvas(className);
 
@@ -65,10 +66,10 @@ export class Canvas {
 
 export class CanvasDraw extends Canvas {
 	constructor(
-		root: HTMLElement,
-		className: string,
+		public root: HTMLElement,
+		protected className: string,
 		protected brush: Brush,
-		options?: CanvasOptions
+		protected options: CanvasOptions
 	) {
 		super(root, className, options);
 	}
@@ -78,11 +79,8 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected setBrush(path: Path, point: Point) {
-		// this could/should be cleaner.. should point contain mode and cap?
-		const mode = path.mode;
-		const size = point.size;
-		const cap = path.cap;
-		const color = point.color;
+		const { mode, cap } = path;
+		const { size, color } = point;
 
 		// we need to see the temp canvas paint erasing paths
 		const isTemp = this.canvas.classList.contains("canvas-paint_temp");
@@ -91,8 +89,10 @@ export class CanvasDraw extends Canvas {
 
 		this.context.lineWidth = size;
 		this.context.lineCap = cap;
-		this.context.strokeStyle = mode === "erase" ? "white" : color; // could/should be canvas's background color
-		this.context.fillStyle = mode === "erase" ? "white" : color; // could/should be canvas's background color
+		this.context.lineJoin = "round";
+
+		this.context.strokeStyle = mode === "erase" ? this.options.bgColor : color;
+		this.context.fillStyle = mode === "erase" ? this.options.bgColor : color;
 	}
 
 	protected async drawPath(path: Path, delay?: number) {
@@ -125,14 +125,13 @@ export class CanvasDraw extends Canvas {
 	protected drawDot(path: Path) {
 		const { size, cap } = this.brush;
 		const p1 = path.points[0];
-		const { x, y } = p1;
-		this.setBrush(path, p1);
 
+		this.setBrush(path, p1);
 		this.context.beginPath();
 
 		const r = size / 2;
-		if (cap === "round") this.context.arc(x, y, r, 0, 2 * Math.PI);
-		if (cap !== "round") this.context.rect(x - r, y - r, size, size);
+		if (cap === "round") this.context.arc(p1.x, p1.y, r, 0, 2 * Math.PI);
+		if (cap !== "round") this.context.rect(p1.x - r, p1.y - r, size, size);
 
 		this.context.fill();
 	}

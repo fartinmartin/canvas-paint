@@ -98,7 +98,6 @@ export class Brush {
 	}
 
 	private handleMove(x: number, y: number) {
-		// this._lazy.update({ x: Math.round(x), y: Math.round(y) });
 		this._lazy.update({ x, y });
 		this.events.dispatch("move", this.payload());
 	}
@@ -115,8 +114,3 @@ export class Brush {
 		this.events.dispatch("up", this.payload());
 	}
 }
-// pubsub this boi!
-// UI would like to know, temp would like to know,
-// artboard would like to know,
-// where/however paths are being recorded would like to know
-// https://color2k.com/#parse-to-rgba
