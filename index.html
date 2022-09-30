@@ -35,8 +35,9 @@
 				{ label: "setColor", callback: () => demo.setColor("green") },
 				{ label: "setSize", callback: () => demo.setSize(20) },
 				{ label: "setMode", callback: () => demo.setMode("erase") },
-				// { label: "setCap", callback: () => demo.setCap() },
+				{ label: "setCap", callback: () => demo.setCap("butt") },
 				{ label: "setRadius", callback: () => demo.setRadius() },
+				{ label: "drawOn", callback: () => demo.drawHistory(10) },
 			].forEach((method) => {
 				const button = document.createElement("button");
 				button.innerText = method.label;

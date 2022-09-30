@@ -74,12 +74,26 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
-	draw(path: Path, delay?: number) {
-		path.mode !== "fill" ? this.drawPath(path, delay) : this.drawFill(path);
+	async draw(path: Path, delay?: number) {
+		if (!delay) {
+			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path);
+		} else {
+			for (let i = 0; i < path.points.length; i++) {
+				const slice = JSON.parse(JSON.stringify(path)); // can we do w/o this?
+				slice.points = slice.points.slice(0, i + 1);
+
+				path.mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
+				await waitFor(delay);
+			}
+
+			// return a promise in order to await the end of path
+			// before advancing to the next path
+			return waitFor(delay);
+		}
 	}
 
 	protected setBrush(path: Path, point: Point) {
-		const { mode, cap } = path;
+		const { mode, cap, join } = path;
 		const { size, color } = point;
 
 		// we need to see the temp canvas paint erasing paths
@@ -89,13 +103,13 @@ export class CanvasDraw extends Canvas {
 
 		this.context.lineWidth = size;
 		this.context.lineCap = cap;
-		this.context.lineJoin = "round";
+		this.context.lineJoin = join;
 
 		this.context.strokeStyle = mode === "erase" ? this.options.bgColor : color;
 		this.context.fillStyle = mode === "erase" ? this.options.bgColor : color;
 	}
 
-	protected async drawPath(path: Path, delay?: number) {
+	protected drawPath(path: Path) {
 		if (path.points.length && path.points.length < 2) return this.drawDot(path);
 		if (path.points.length < 2) return;
 
@@ -112,14 +126,9 @@ export class CanvasDraw extends Canvas {
 
 			p1 = path.points[i];
 			p2 = path.points[i + 1];
-
-			if (delay) {
-				this.context.stroke();
-				await waitFor(delay);
-			}
 		}
 
-		if (!delay) this.context.stroke();
+		this.context.stroke();
 	}
 
 	protected drawDot(path: Path) {

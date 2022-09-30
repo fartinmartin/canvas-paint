@@ -12,6 +12,7 @@ import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
 import { createStyles } from "./utils/styles";
+import { waitFor } from "./utils/waitFor";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -109,8 +110,11 @@ export class Paint {
 		this.drawHistory();
 	}
 
-	drawHistory(delay?: number) {
-		for (const path of this.history.state) this.artboard.draw(path, delay);
+	async drawHistory(delay?: number) {
+		this.artboard.clear();
+		for (const path of this.history.state) {
+			await this.artboard.draw(path, delay);
+		}
 	}
 
 	setMode(value: Mode) {
