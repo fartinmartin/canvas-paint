@@ -63,30 +63,40 @@ export class Paint {
 
 		// when brush moves, if brush.isDrawing, update current path on temp canvas
 		this.brush.events.on("move", (brush: any) => {
-			if (brush.isDrawing) this.temp.draw(this.getPath());
+			if (brush.isDrawing) this.temp.draw(this.path);
 		});
 
 		// when brush moves, if brush.isDrawing, update current path/points array
 		this.brush.events.on("move", (brush: any) => {
 			if (brush.isDrawing)
 				this.points.push(
-					new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
+					new Point(
+						brush.coords.x,
+						brush.coords.y,
+						brush.color,
+						brush.size * this.scale
+					) // this could/should be cleaner :)
 				);
 		});
 
 		// handle edge case of "click" for dots
 		this.brush.events.on("down", (brush: any) => {
-			this.temp.draw(this.getPath());
+			this.temp.draw(this.path);
 			this.points.push(
-				new Point(brush.coords.x, brush.coords.y, brush.color, brush.size) // this could/should be cleaner :)
+				new Point(
+					brush.coords.x,
+					brush.coords.y,
+					brush.color,
+					brush.size * this.scale
+				) // this could/should be cleaner :)
 			);
 		});
 
 		// when brush releases, if brush.isDrawinging, commit path to artboard and histroy
 		this.brush.events.on("up", () => {
 			this.temp.clear();
-			this.artboard.draw(this.getPath());
-			this.history.execute(new AddPath(this.getPath()));
+			this.artboard.draw(this.path);
+			this.history.execute(new AddPath(this.path));
 			this.points = [];
 		});
 	}
@@ -114,8 +124,8 @@ export class Paint {
 		return this.root.clientWidth / this.options.width;
 	}
 
-	getPath() {
-		return new Path(this.points, this.brush.mode, this.scale); // todo where is scale at??
+	get path() {
+		return new Path(this.points, this.brush.mode, this.scale);
 	}
 
 	undo() {
@@ -134,10 +144,16 @@ export class Paint {
 
 	async drawHistory(delay?: number) {
 		this.artboard.clear();
-		for (const path of this.history.state) {
-			await this.artboard.draw(path, delay);
+		if (delay) {
+			for (const path of this.history.state) {
+				await this.temp.draw(path, delay); // draw lines point-by-point to temp
+				this.artboard.draw(path); // draw lines immediately to artboard
+				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness) ⚠️ but, how will they fare with mode === "fill"?
+			}
+			this.drawHistory(); // run this again w/o delay to remove crunchiness
+		} else {
+			for (const path of this.history.state) this.artboard.draw(path);
 		}
-		if (delay) this.drawHistory(); // run this again w/o delay to remove crunchiness
 	}
 
 	setMode(value: Mode) {

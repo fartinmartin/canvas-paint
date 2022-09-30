@@ -10,9 +10,9 @@ export class UI extends Canvas {
 	private catenary = new Catenary();
 
 	constructor(
-		protected root: HTMLElement,
+		public root: HTMLElement,
 		private brush: Brush,
-		options?: CanvasOptions
+		options: CanvasOptions
 	) {
 		super(root, "ui", options);
 	}
@@ -26,7 +26,7 @@ export class UI extends Canvas {
 		// Draw brush point
 		this.context.beginPath();
 		this.context.fillStyle = this.brush.color;
-		this.context.arc(x, y, this.brush.size / 2, 0, c, true);
+		this.context.arc(x, y, (this.brush.size * this.scale) / 2, 0, c, true);
 		this.context.fill();
 
 		// Draw mouse point
