@@ -12,6 +12,7 @@ import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
 import { createStyles } from "./utils/styles";
+import { resizeObserver } from "./utils/resize";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -37,7 +38,9 @@ export class Paint {
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.id = namespace + "container";
 		this.root.classList.add(this.id);
+
 		createStyles(this.id, namespace, this.options);
+		resizeObserver(this.root, (e) => this.resize(e)); // TODO: option for debounce time?
 
 		this.brush = new Brush(root, options);
 
@@ -89,6 +92,21 @@ export class Paint {
 
 	removeListeners() {
 		this.brush.events.removeAllListeners();
+	}
+
+	resize(entry: ResizeObserverEntry) {
+		const width = entry.target.clientWidth;
+		const newDimensions = { width, height: width / this.aspectRatio }; // TODO: have an option to opt out of aspectRatio resizing
+
+		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
+			canvas.resize(newDimensions);
+		});
+
+		this.drawHistory();
+	}
+
+	get aspectRatio() {
+		return this.options.width / this.options.height;
 	}
 
 	getPath() {

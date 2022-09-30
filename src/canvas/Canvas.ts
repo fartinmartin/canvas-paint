@@ -39,9 +39,11 @@ export class Canvas {
 		return this.root.appendChild(canvas);
 	}
 
-	protected setDPI() {
+	protected setDPI(dimensions?: { width: number; height: number }) {
 		// get current CSS size of the canvas
-		const { width, height } = this.canvas.getBoundingClientRect();
+		const { width, height } = dimensions
+			? dimensions
+			: this.canvas.getBoundingClientRect();
 
 		// increase the actual size of our canvas
 		this.canvas.width = width * devicePixelRatio;
@@ -55,8 +57,8 @@ export class Canvas {
 		this.canvas.style.height = height + "px";
 	}
 
-	protected resize() {
-		// TODO: but this is what will be called when container is observed to have changed? I think?
+	resize(newDimensions: { width: number; height: number }) {
+		this.setDPI(newDimensions);
 	}
 
 	clear() {
