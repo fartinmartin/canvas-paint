@@ -12,7 +12,7 @@ export class Brush {
 	public events = new EventEmitter();
 	private _isDrawing = false;
 
-	private _size = 5;
+	private _size = 5; // TODO: needs to react to Paint.scale somehow
 	private _color = "tomato";
 	private _mode: Mode = "draw";
 	private _cap: Cap = "round";

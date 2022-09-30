@@ -19,6 +19,7 @@ export type PaintOptions = CanvasOptions &
 	GridOptions & {
 		width: number;
 		height: number;
+		debounce: number;
 	};
 
 export class Paint {
@@ -40,7 +41,7 @@ export class Paint {
 		this.root.classList.add(this.id);
 
 		createStyles(this.id, namespace, this.options);
-		resizeObserver(this.root, (e) => this.resize(e)); // TODO: option for debounce time?
+		resizeObserver(this.root, (e) => this.resize(e), this.options.debounce);
 
 		this.brush = new Brush(root, options);
 
@@ -109,8 +110,12 @@ export class Paint {
 		return this.options.width / this.options.height;
 	}
 
+	get scale() {
+		return this.root.clientWidth / this.options.width;
+	}
+
 	getPath() {
-		return new Path(this.points, this.brush.mode, 1); // todo where is scale at??
+		return new Path(this.points, this.brush.mode, this.scale); // todo where is scale at??
 	}
 
 	undo() {

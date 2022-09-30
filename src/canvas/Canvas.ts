@@ -2,6 +2,7 @@ import { Coordinates } from "lazy-brush";
 import { Brush } from "../classes/Brush";
 import { Path } from "../classes/Path";
 import { Point } from "../classes/Point";
+import { scalePath } from "../utils/points";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
@@ -61,6 +62,10 @@ export class Canvas {
 		this.setDPI(newDimensions);
 	}
 
+	get scale() {
+		return this.root.clientWidth / this.options.width;
+	}
+
 	clear() {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	}
@@ -76,7 +81,9 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
-	async draw(path: Path, delay?: number) {
+	async draw(p: Path, delay?: number) {
+		const path = scalePath(p, this.scale);
+
 		if (!delay) {
 			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path);
 		} else {
@@ -134,8 +141,9 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawDot(path: Path) {
-		const { size, cap } = this.brush;
 		const p1 = path.points[0];
+		const { cap } = path;
+		const { size } = p1;
 
 		this.setBrush(path, p1);
 		this.context.beginPath();

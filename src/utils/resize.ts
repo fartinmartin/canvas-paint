@@ -3,7 +3,8 @@ import { debounce } from "lodash-es";
 
 export function resizeObserver(
 	el: HTMLElement,
-	callback: (entry: any) => void
+	callback: (entry: any) => void,
+	delay = 500
 ) {
 	let { width: prevWidth, height: prevHeight } = el.getBoundingClientRect();
 
@@ -15,7 +16,7 @@ export function resizeObserver(
 				callback(entry);
 				(prevWidth = width), (prevHeight = height);
 			}
-		}, 500)
+		}, delay)
 	);
 
 	observer.observe(el);

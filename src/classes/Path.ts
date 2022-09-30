@@ -10,9 +10,9 @@ export class Path {
 		public join: Join = "round"
 	) {}
 
-	factor(destination: number) {
-		return this.scale / destination;
-	}
+	// factor(destination: number) {
+	// 	return this.scale / destination;
+	// }
 
 	// clone() {
 	// 	return new Path(this.points, this.mode, this.scale, this.cap, this.join);
