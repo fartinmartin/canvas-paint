@@ -12,7 +12,6 @@ import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
 import { createStyles } from "./utils/styles";
-import { waitFor } from "./utils/waitFor";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -115,6 +114,7 @@ export class Paint {
 		for (const path of this.history.state) {
 			await this.artboard.draw(path, delay);
 		}
+		if (delay) this.drawHistory(); // run this again w/o delay to remove crunchiness
 	}
 
 	setMode(value: Mode) {
