@@ -21,15 +21,11 @@ export class CommandStack {
 	}
 
 	undo() {
-		if (this._stack.length > 1) {
-			this._redo.push(this._stack.pop()!);
-		}
+		if (this.canUndo) this._redo.push(this._stack.pop()!);
 	}
 
 	redo() {
-		if (this._redo.length >= 1) {
-			this._stack.push(this._redo.pop()!);
-		}
+		if (this.canRedo) this._stack.push(this._redo.pop()!);
 	}
 
 	get canUndo() {
@@ -37,7 +33,7 @@ export class CommandStack {
 	}
 
 	get canRedo() {
-		return !!this._redo.length;
+		return this._redo.length >= 1;
 	}
 }
 

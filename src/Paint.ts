@@ -4,15 +4,16 @@ import { Artboard } from "./canvas/Artboard";
 import { Grid, GridOptions } from "./canvas/Grid";
 import { CanvasOptions } from "./canvas/Canvas";
 
-import { namespace } from "./utils/uuid";
-
-import { Brush, Cap, Mode } from "./classes/Brush";
+import { Brush, Cap, Mode, BrushPayload } from "./classes/Brush";
 import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
+
+import { namespace } from "./utils/uuid";
 import { createStyles } from "./utils/styles";
 import { resizeObserver } from "./utils/resize";
+import { scalePoint } from "./utils/points";
 
 export type PaintOptions = CanvasOptions &
 	UIOptions &
@@ -43,6 +44,7 @@ export class Paint {
 		createStyles(this.id, namespace, this.options);
 		resizeObserver(this.root, (e) => this.resize(e), this.options.debounce);
 
+		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
 		this.brush = new Brush(root, options);
 
 		this.ui = new UI(root, this.brush, options);
@@ -61,39 +63,24 @@ export class Paint {
 			this.ui.drawInterface(pointer, coords);
 		});
 
-		// when brush moves, if brush.isDrawing, update current path on temp canvas
-		this.brush.events.on("move", (brush: any) => {
-			if (brush.isDrawing) this.temp.draw(this.path);
+		// when brush moves, if brush.isDrawing, update current path/points array then draw current path/points array on temp canvas
+		this.brush.events.on("move", (brush: BrushPayload) => {
+			if (brush.isDrawing && brush.mode !== "fill") {
+				this.points.push(scalePoint(brush.point, this.scale));
+				this.temp.draw(this.path);
+			}
 		});
 
-		// when brush moves, if brush.isDrawing, update current path/points array
-		this.brush.events.on("move", (brush: any) => {
-			if (brush.isDrawing)
-				this.points.push(
-					new Point(
-						brush.coords.x,
-						brush.coords.y,
-						brush.color,
-						brush.size * this.scale
-					) // this could/should be cleaner :)
-				);
+		// handle edge case of "click" for dots and fills!
+		this.brush.events.on("down", (brush: BrushPayload) => {
+			if (brush.isDrawing) {
+				this.points.push(scalePoint(brush.point, this.scale));
+				this.temp.draw(this.path);
+			}
 		});
 
-		// handle edge case of "click" for dots
-		this.brush.events.on("down", (brush: any) => {
-			this.temp.draw(this.path);
-			this.points.push(
-				new Point(
-					brush.coords.x,
-					brush.coords.y,
-					brush.color,
-					brush.size * this.scale
-				) // this could/should be cleaner :)
-			);
-		});
-
-		// when brush releases, if brush.isDrawinging, commit path to artboard and histroy
-		this.brush.events.on("up", () => {
+		// when brush releases, commit path to artboard and histroy
+		this.brush.events.on("up", (brush: BrushPayload) => {
 			this.temp.clear();
 			this.artboard.draw(this.path);
 			this.history.execute(new AddPath(this.path));

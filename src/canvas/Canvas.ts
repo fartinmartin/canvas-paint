@@ -1,8 +1,10 @@
 import { Coordinates } from "lazy-brush";
+
 import { Brush } from "../classes/Brush";
 import { Path } from "../classes/Path";
 import { Point } from "../classes/Point";
 import { scalePath } from "../utils/points";
+
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
@@ -13,9 +15,9 @@ export type CanvasOptions = {
 };
 
 export class Canvas {
-	protected canvas: HTMLCanvasElement;
-	protected context: CanvasRenderingContext2D;
-	protected id: string;
+	public canvas: HTMLCanvasElement;
+	public context: CanvasRenderingContext2D;
+	public id: string;
 
 	constructor(
 		public root: HTMLElement,
@@ -85,19 +87,16 @@ export class CanvasDraw extends Canvas {
 		const path = scalePath(p, this.scale);
 
 		if (!delay) {
-			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path);
+			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path); // await this.drawFill()?
 		} else {
 			for (let i = 0; i < path.points.length; i++) {
-				const slice = JSON.parse(JSON.stringify(path)); // can we do w/o this?
+				const slice = JSON.parse(JSON.stringify(path)); // can we do w/o this? or in a more efficient way?
 				slice.points = slice.points.slice(0, i + 1);
-
 				path.mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
 				await waitFor(delay);
 			}
 
-			// return a promise in order to await the end of path
-			// before advancing to the next path
-			return waitFor(delay);
+			return waitFor(delay); // return a promise in order to pause between paths
 		}
 	}
 
@@ -155,7 +154,15 @@ export class CanvasDraw extends Canvas {
 		this.context.fill();
 	}
 
-	protected drawFill(path: Path) {}
+	protected drawFill(path: Path) {
+		// get a pixel info from target
+		// const target = this.root.querySelector("artboard") as HTMLCanvasElement;
+		// const { context, canvas } = this.artboard; // TODO: ⚠️ what's the best way to get access to this.artboard?
+		// const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+		// https://github.com/shebekocom/simple-piskel-concept/blob/master/simple-piskel-clone/src/modules/fillTool.js
+		// https://github.com/piskelapp/piskel/blob/21b8bdd0f3602c455e89f25fb337068fd9ea3a35/src/js/utils/PixelUtils.js#L110
+		// https://github.com/amaljosea/algorithm-visualizer/blob/master/src/pages/FloodFill/algorithm.js
+	}
 
 	protected getMidCoords(p1: Coordinates, p2: Coordinates) {
 		return {

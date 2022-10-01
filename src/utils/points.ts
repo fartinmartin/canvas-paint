@@ -13,10 +13,9 @@ export function getMidCoords(p1: Coordinates, p2: Coordinates) {
 // export type PathLike = ChangeFields<Path, { points: Omit<Point, "coords">[] }>;
 
 export function scalePath(path: Path, scaleTo: number) {
+	let p = JSON.parse(JSON.stringify(path)); // can we do w/o this?
 	const drawnAt = path.scale;
 	const factor = drawnAt / scaleTo;
-
-	let p = JSON.parse(JSON.stringify(path)); // can we do w/o this?
 
 	p.points = p.points.map((point: Point) => ({
 		...point,
@@ -25,5 +24,9 @@ export function scalePath(path: Path, scaleTo: number) {
 		y: point.y / factor,
 	}));
 
-	return p;
+	return p as Path;
+}
+
+export function scalePoint(point: Point, scaleTo: number) {
+	return new Point(point.x, point.y, point.color, point.size * scaleTo);
 }

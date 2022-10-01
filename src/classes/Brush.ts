@@ -1,10 +1,12 @@
 import { LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
 import { EventEmitter } from "./Events";
+import { Point } from "./Point";
 
 export type Mode = "draw" | "erase" | "fill";
 export type Cap = "butt" | "round" | "square";
 export type Join = "round" | "bevel" | "miter";
+export type BrushPayload = ReturnType<() => Brush["payload"]>;
 
 export type BrushOptions = {};
 
@@ -43,7 +45,7 @@ export class Brush {
 
 	set size(value: number) {
 		if (value > 0) this._size = value;
-		this.events.dispatch("brushUpdate", this.payload());
+		this.events.dispatch("brushUpdate", this.payload);
 	}
 
 	get color() {
@@ -53,7 +55,7 @@ export class Brush {
 	set color(value: string) {
 		// if color2k can parse..
 		this._color = value;
-		this.events.dispatch("brushUpdate", this.payload());
+		this.events.dispatch("brushUpdate", this.payload);
 	}
 
 	get mode() {
@@ -62,7 +64,7 @@ export class Brush {
 
 	set mode(value: Mode) {
 		this._mode = value;
-		this.events.dispatch("brushUpdate", this.payload());
+		this.events.dispatch("brushUpdate", this.payload);
 	}
 
 	get cap() {
@@ -71,7 +73,7 @@ export class Brush {
 
 	set cap(value: Cap) {
 		this._cap = value;
-		this.events.dispatch("brushUpdate", this.payload());
+		this.events.dispatch("brushUpdate", this.payload);
 	}
 
 	get lazy() {
@@ -86,31 +88,34 @@ export class Brush {
 	// 	this._lazy;
 	// }
 
-	private payload() {
+	private get point() {
+		const { x, y } = this._lazy.brush.toObject();
+		return new Point(x, y, this.color, this.size);
+	}
+
+	get payload() {
 		return {
 			isDrawing: this.isDrawing,
-			size: this.size,
-			color: this.color,
 			mode: this.mode,
 			cap: this.cap,
-			coords: this._lazy.brush.toObject(),
+			point: this.point,
 		};
 	}
 
 	private handleMove(x: number, y: number) {
 		this._lazy.update({ x, y });
-		this.events.dispatch("move", this.payload());
+		this.events.dispatch("move", this.payload);
 	}
 
 	private handleDown(event: MouseEvent) {
 		event.preventDefault();
 		this._isDrawing = true;
-		this.events.dispatch("down", this.payload());
+		this.events.dispatch("down", this.payload);
 	}
 
 	private handleUp(event: MouseEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
-		this.events.dispatch("up", this.payload());
+		this.events.dispatch("up", this.payload);
 	}
 }
