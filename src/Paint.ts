@@ -139,7 +139,7 @@ export class Paint {
 			}
 			this.drawHistory(); // run this again w/o delay to remove crunchiness
 		} else {
-			for (const path of this.history.state) this.artboard.draw(path);
+			for (const path of this.history.state) await this.artboard.draw(path);
 		}
 	}
 

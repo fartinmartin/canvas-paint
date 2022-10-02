@@ -1,12 +1,13 @@
-import { Coordinates } from "lazy-brush";
-
 import { Brush } from "../classes/Brush";
 import { Path } from "../classes/Path";
 import { Point } from "../classes/Point";
-import { scalePath } from "../utils/points";
 
+import { getMidCoords, scalePath } from "../utils/points";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
+
+import FloodFill, { setColorAtPixel } from "q-floodfill";
+import { colorToRGBA, isSameColor } from "../utils/fill";
 
 export type CanvasOptions = {
 	width: number;
@@ -84,7 +85,7 @@ export class CanvasDraw extends Canvas {
 	}
 
 	async draw(p: Path, delay?: number) {
-		const path = scalePath(p, this.scale);
+		const path = scalePath(p, this.scale); // scale here so that drawings are scaled whilst drawing, but also whislt playing back history
 
 		if (!delay) {
 			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path); // await this.drawFill()?
@@ -129,7 +130,7 @@ export class CanvasDraw extends Canvas {
 		this.context.beginPath();
 
 		for (let i = 1, len = path.points.length; i < len; i++) {
-			const midPoint = this.getMidCoords(p1, p2);
+			const midPoint = getMidCoords(p1, p2);
 			this.context.quadraticCurveTo(p1.x, p1.y, midPoint.x, midPoint.y);
 
 			p1 = path.points[i];
@@ -155,19 +156,59 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawFill(path: Path) {
-		// get a pixel info from target
-		// const target = this.root.querySelector("artboard") as HTMLCanvasElement;
-		// const { context, canvas } = this.artboard; // TODO: ⚠️ what's the best way to get access to this.artboard?
-		// const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-		// https://github.com/shebekocom/simple-piskel-concept/blob/master/simple-piskel-clone/src/modules/fillTool.js
-		// https://github.com/piskelapp/piskel/blob/21b8bdd0f3602c455e89f25fb337068fd9ea3a35/src/js/utils/PixelUtils.js#L110
-		// https://github.com/amaljosea/algorithm-visualizer/blob/master/src/pages/FloodFill/algorithm.js
-	}
+		// TODO: ⚠️ what's the best way to get access to this.temp?
+		if (this.canvas.className === `${namespace}temp`) return;
 
-	protected getMidCoords(p1: Coordinates, p2: Coordinates) {
-		return {
-			x: p1.x + (p2.x - p1.x) / 2,
-			y: p1.y + (p2.y - p1.y) / 2,
-		};
+		// TODO: ⚠️ what's the best way to get access to this.artboard? // const { context, canvas } = this.artboard;
+		const canvas = this.root.querySelector(`.${namespace}artboard`);
+		if (!canvas || !(canvas instanceof HTMLCanvasElement)) return;
+
+		const context = canvas.getContext("2d")!;
+		const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+		const { x: originalX, y: originalY, color: fillColor } = path.points[0];
+		// our canvas image size is not 1to1 with our point selection! and! imageData arrays need nice round integers for indexing
+		const x = Math.round(originalX * devicePixelRatio);
+		const y = Math.round(originalY * devicePixelRatio);
+
+		const floodFill = new FloodFill(imageData);
+		floodFill.isSameColor = isSameColor;
+		floodFill.colorToRGBA = colorToRGBA;
+		// floodFill.collectModifiedPixels = true;
+		floodFill.fill(fillColor, x, y, 30); // this.options.fillTolerance
+
+		context.putImageData(floodFill.imageData, 0, 0);
 	}
+}
+
+function createBlurCanvas(
+	{ imageData: { width, height }, modifiedPixels }: FloodFill,
+	color: string
+) {
+	const { canvas, context } = createTempCanvas(width, height);
+	const fillColor = colorToRGBA(color);
+
+	const imageData = context.getImageData(0, 0, width, height);
+	modifiedPixels.forEach((val) => {
+		const [x, y] = val.split("|").map(Number);
+		setColorAtPixel(imageData, fillColor, x, y);
+	});
+
+	context.putImageData(imageData, 0, 0);
+	context.filter = "blur(2px)";
+	context.drawImage(canvas, 0, 0);
+
+	return { canvas, imageData };
+}
+
+function createTempCanvas(width: number, height: number) {
+	const canvas = document.createElement("canvas");
+	const context = canvas.getContext("2d")!;
+
+	canvas.width = width;
+	canvas.height = height;
+
+	// context.scale(devicePixelRatio, devicePixelRatio);
+
+	return { canvas, context };
 }
