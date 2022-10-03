@@ -6,7 +6,8 @@ import { getMidCoords, scalePath } from "../utils/points";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
-import FloodFill from "q-floodfill";
+import combinate from "combinate";
+import FloodFill, { setColorAtPixel } from "q-floodfill";
 import { colorToRGBA, isSameColor } from "../utils/fill";
 
 export type CanvasOptions = {
@@ -175,15 +176,50 @@ export class CanvasDraw extends Canvas {
 		const floodFill = new FloodFill(imageData);
 		floodFill.isSameColor = isSameColor;
 		floodFill.colorToRGBA = colorToRGBA;
-		// floodFill.collectModifiedPixels = true;
+		floodFill.collectModifiedPixels = true;
 		floodFill.fill(fillColor, x, y, this.brush.tolerance);
 
-		// TODO: could we `context.drawImage()` with `floodFill.modifiedPixels`, but with blurred edges instead?
-		// const blur = createBlurCanvas(floodFill, fillColor);
-		// context.drawImage(blur.canvas,0,0,canvas.width / devicePixelRatio,canvas.height / devicePixelRatio); // prettier-ignore
-		// OR: could we draw a 1px stroke using a path defined by the `floodFill.modifiedPixels`?
 		context.putImageData(floodFill.imageData, 0, 0);
+
+		// createOutlineCanvas() paints an outline in a blunt way..
+		// OR: could we get the edge as a {x,y}[] path from the `floodFill.modifiedPixels` directly? marching square algo?
+		const out = createOutlineCanvas(floodFill, fillColor);
+		context.drawImage(out.canvas, 0, 0, canvas.width / devicePixelRatio, canvas.height / devicePixelRatio); // prettier-ignore
 	}
+}
+
+function createOutlineCanvas(
+	{ imageData: { width, height }, modifiedPixels }: FloodFill,
+	color: string
+) {
+	const { canvas, context } = createTempCanvas(width, height);
+	const fillColor = colorToRGBA(color);
+
+	const imageData = context.getImageData(0, 0, width, height);
+	modifiedPixels.forEach((val) => {
+		const [x, y] = val.split("|").map(Number);
+		setColorAtPixel(imageData, fillColor, x, y);
+	});
+
+	context.putImageData(imageData, 0, 0);
+
+	const original = createTempCanvas(width, height);
+	original.context.putImageData(imageData, 0, 0);
+
+	const strokeWidth = 0.125;
+	// context.filter = "blur(0.25px)";
+
+	combinate({
+		x: [0, 1, -1],
+		y: [0, 1, -1],
+	}).forEach((offset) => {
+		context.drawImage(canvas, offset.x * strokeWidth, offset.y * strokeWidth);
+	});
+
+	context.globalCompositeOperation = "destination-out";
+	context.drawImage(original.canvas, 0, 0);
+
+	return { canvas, imageData, original };
 }
 
 // function createBlurCanvas(
@@ -206,12 +242,12 @@ export class CanvasDraw extends Canvas {
 // 	return { canvas, imageData };
 // }
 
-// function createTempCanvas(width: number, height: number) {
-// 	const canvas = document.createElement("canvas");
-// 	const context = canvas.getContext("2d")!;
+function createTempCanvas(width: number, height: number) {
+	const canvas = document.createElement("canvas");
+	const context = canvas.getContext("2d")!;
 
-// 	canvas.width = width;
-// 	canvas.height = height;
+	canvas.width = width;
+	canvas.height = height;
 
-// 	return { canvas, context };
-// }
+	return { canvas, context };
+}

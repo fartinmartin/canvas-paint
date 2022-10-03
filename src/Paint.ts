@@ -4,7 +4,7 @@ import { Artboard } from "./canvas/Artboard";
 import { Grid, GridOptions } from "./canvas/Grid";
 import { CanvasOptions } from "./canvas/Canvas";
 
-import { Brush, Cap, Mode, Join, BrushPayload, BrushOptions } from "./classes/Brush"; // prettier-ignore
+import { Brush, BrushPayload, BrushOptions } from "./classes/Brush";
 import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
@@ -33,8 +33,8 @@ export class Paint {
 		const className = namespace + "container";
 		this.root.classList.add(className);
 
-		createStyles(className, namespace, this.options);
-		resizeObserver(this.root, (e) => this.resize(e), this.options.debounce);
+		createStyles(className, namespace, options);
+		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
 
 		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
 		this.brush = new Brush(root, options);

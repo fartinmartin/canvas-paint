@@ -45,7 +45,7 @@ export class Brush {
 		});
 
 		this._size = options.brush?.size ?? 5;
-		this._color = options.brush?.color ?? "tomato";
+		this._color = options.brush?.color ?? "#ffaa00";
 		this._mode = options.brush?.mode ?? "draw";
 		this._cap = options.brush?.cap ?? "round";
 		this._join = options.brush?.join ?? "round";
