@@ -17,7 +17,10 @@ export class UI extends Canvas {
 		super(root, "ui", options);
 	}
 
-	drawInterface(pointer: Coordinates, brush: Coordinates) {
+	drawInterface() {
+		const pointer = this.brush.lazy.getPointerCoordinates();
+		const brush = this.brush.lazy.getBrushCoordinates();
+
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
 		const { x, y } = brush;
@@ -26,7 +29,10 @@ export class UI extends Canvas {
 		// Draw brush point
 		this.context.beginPath();
 		this.context.fillStyle = this.brush.color;
-		this.context.arc(x, y, (this.brush.size * this.scale) / 2, 0, c, true);
+		const r = this.brush.size * this.scale;
+		this.brush.cap === "round"
+			? this.context.arc(x, y, r / 2, 0, c, true)
+			: this.context.rect(x - r / 2, y - r / 2, r, r);
 		this.context.fill();
 
 		// Draw mouse point
@@ -42,18 +48,19 @@ export class UI extends Canvas {
 		);
 		this.context.fill();
 
-		//Draw catenary
+		// Draw catenary
 		if (this.brush.lazy.isEnabled()) {
 			this.context.beginPath();
 			this.context.lineWidth = 2; // could be passed by user's option object (in the constructor)
 			this.context.lineCap = "round";
 			this.context.setLineDash([2, 4]); // could be passed by user's option object (in the constructor)
 			this.context.strokeStyle = "black"; // could be passed by user's option object (in the constructor)
+
 			this.catenary.drawToCanvas(
 				this.context,
 				brush,
 				pointer,
-				this.brush.lazy.radius
+				this.brush.lazy.radius / 2
 			);
 			this.context.stroke();
 		}

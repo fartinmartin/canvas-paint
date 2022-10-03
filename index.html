@@ -26,23 +26,80 @@
 				width: 600,
 				height: 200,
 				bgColor: "whitesmoke",
+				ui: { radius: 10 },
 			});
 
 			const controls = document.getElementById("controls");
 			[
-				{ label: "undo", callback: () => demo.undo() },
-				{ label: "redo", callback: () => demo.redo() },
-				{ label: "setColor", callback: () => demo.setColor("green") },
-				{ label: "setSize", callback: () => demo.setSize(20) },
-				{ label: "setMode", callback: () => demo.setMode("fill") },
-				{ label: "setCap", callback: () => demo.setCap("butt") },
-				{ label: "setRadius", callback: () => demo.setRadius() },
-				{ label: "drawOn", callback: () => demo.drawHistory(10) },
+				{ label: "undo", type: "button", callback: () => demo.undo() },
+				{ label: "redo", type: "button", callback: () => demo.redo() },
+				{
+					label: "setColor",
+					type: "color",
+					value: demo.brush.color,
+					callback: (e) => (demo.brush.color = e.target.value),
+				},
+				{
+					label: "setSize",
+					type: "range",
+					max: 100,
+					value: demo.brush.size,
+					callback: (e) => (demo.brush.size = e.target.value),
+				},
+				{
+					label: "draw",
+					type: "button",
+					callback: () => (demo.brush.mode = "draw"),
+				},
+				{
+					label: "erase",
+					type: "button",
+					callback: () => (demo.brush.mode = "erase"),
+				},
+				{
+					label: "fill",
+					type: "button",
+					callback: () => (demo.brush.mode = "fill"),
+				},
+				{
+					label: "setCap",
+					type: "button",
+					callback: () => (demo.brush.cap = "butt"),
+				},
+				{
+					label: "setRadius",
+					type: "range",
+					max: 50,
+					value: demo.brush.lazy.radius,
+					callback: (e) => (demo.brush.lazy.radius = e.target.value),
+				},
+				{
+					label: "drawOn",
+					type: "button",
+					callback: () => demo.drawHistory(10),
+				},
+				{
+					label: "tolerance",
+					type: "range",
+					max: 255,
+					value: demo.brush.tolerance,
+					callback: (e) => (demo.brush.tolerance = e.target.value),
+				},
 			].forEach((method) => {
-				const button = document.createElement("button");
-				button.innerText = method.label;
-				button.addEventListener("click", method.callback);
-				controls.appendChild(button);
+				const input = document.createElement("input");
+
+				input.value = method.label;
+				input.type = method.type;
+				if (method.max) input.max = method.max;
+				if (method.value) input.value = method.value;
+
+				controls.appendChild(input);
+
+				if (method.type === "button") {
+					input.addEventListener("click", method.callback);
+				} else {
+					input.addEventListener("change", method.callback);
+				}
 			});
 		</script>
 	</body>

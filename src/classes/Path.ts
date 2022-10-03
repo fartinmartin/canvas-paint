@@ -7,7 +7,8 @@ export class Path {
 		public mode: Mode = "draw",
 		public scale: number = 1,
 		public cap: Cap = "round",
-		public join: Join = "round"
+		public join: Join = "round",
+		public tolerance: number
 	) {}
 
 	// factor(destination: number) {

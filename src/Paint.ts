@@ -4,7 +4,7 @@ import { Artboard } from "./canvas/Artboard";
 import { Grid, GridOptions } from "./canvas/Grid";
 import { CanvasOptions } from "./canvas/Canvas";
 
-import { Brush, Cap, Mode, BrushPayload } from "./classes/Brush";
+import { Brush, Cap, Mode, Join, BrushPayload, BrushOptions } from "./classes/Brush"; // prettier-ignore
 import { AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
@@ -15,33 +15,25 @@ import { createStyles } from "./utils/styles";
 import { resizeObserver } from "./utils/resize";
 import { scalePoint } from "./utils/points";
 
-export type PaintOptions = CanvasOptions &
-	UIOptions &
-	GridOptions & {
-		width: number;
-		height: number;
-		debounce: number;
-	};
+export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOptions; // prettier-ignore
 
 export class Paint {
-	id: string;
+	public ui: UI;
+	public temp: Temp;
+	public artboard: Artboard;
+	public grid: Grid;
 
-	ui: UI;
-	temp: Temp;
-	artboard: Artboard;
-	grid: Grid;
+	public brush: Brush;
+	public history = new CommandStack();
+	public events = new EventEmitter();
 
-	brush: Brush;
-	history = new CommandStack();
-	events = new EventEmitter();
-
-	points: Point[] = [];
+	public points: Point[] = [];
 
 	constructor(public root: HTMLElement, private options: PaintOptions) {
-		this.id = namespace + "container";
-		this.root.classList.add(this.id);
+		const className = namespace + "container";
+		this.root.classList.add(className);
 
-		createStyles(this.id, namespace, this.options);
+		createStyles(className, namespace, this.options);
 		resizeObserver(this.root, (e) => this.resize(e), this.options.debounce);
 
 		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
@@ -56,18 +48,17 @@ export class Paint {
 	}
 
 	private addListeners() {
+		// when brush settings change, update UI canvas
+		this.brush.events.on("brushUpdate", () => this.ui.drawInterface());
 		// when brush moves, update UI canvas
-		this.brush.events.on("move", () => {
-			const pointer = this.brush.lazy.getPointerCoordinates();
-			const coords = this.brush.lazy.getBrushCoordinates();
-			this.ui.drawInterface(pointer, coords);
-		});
+		this.brush.events.on("move", () => this.ui.drawInterface());
 
 		// when brush moves, if brush.isDrawing, update current path/points array then draw current path/points array on temp canvas
 		this.brush.events.on("move", (brush: BrushPayload) => {
 			if (brush.isDrawing && brush.mode !== "fill") {
 				this.points.push(scalePoint(brush.point, this.scale));
 				this.temp.draw(this.path);
+				this.events.dispatch("draw", () => {});
 			}
 		});
 
@@ -76,6 +67,7 @@ export class Paint {
 			if (brush.isDrawing) {
 				this.points.push(scalePoint(brush.point, this.scale));
 				this.temp.draw(this.path);
+				this.events.dispatch("start", () => {});
 			}
 		});
 
@@ -85,11 +77,13 @@ export class Paint {
 			this.artboard.draw(this.path);
 			this.history.execute(new AddPath(this.path));
 			this.points = [];
+			this.events.dispatch("end", () => {});
 		});
 	}
 
 	removeListeners() {
 		this.brush.events.removeAllListeners();
+		this.events.removeAllListeners();
 	}
 
 	resize(entry: ResizeObserverEntry) {
@@ -112,7 +106,14 @@ export class Paint {
 	}
 
 	get path() {
-		return new Path(this.points, this.brush.mode, this.scale);
+		return new Path(
+			this.points,
+			this.brush.mode,
+			this.scale,
+			this.brush.cap,
+			this.brush.join,
+			this.brush.tolerance
+		);
 	}
 
 	undo() {
@@ -135,27 +136,11 @@ export class Paint {
 			for (const path of this.history.state) {
 				await this.temp.draw(path, delay); // draw lines point-by-point to temp
 				this.artboard.draw(path); // draw lines immediately to artboard
-				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness) ⚠️ but, how will they fare with mode === "fill"?
+				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness)
 			}
 			this.drawHistory(); // run this again w/o delay to remove crunchiness
 		} else {
 			for (const path of this.history.state) await this.artboard.draw(path);
 		}
-	}
-
-	setMode(value: Mode) {
-		this.brush.mode = value;
-	}
-
-	setSize(value: number) {
-		this.brush.size = value;
-	}
-
-	setColor(value: string) {
-		this.brush.color = value;
-	}
-
-	setCap(value: Cap) {
-		this.brush.cap = value;
 	}
 }

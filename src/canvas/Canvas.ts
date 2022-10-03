@@ -6,13 +6,14 @@ import { getMidCoords, scalePath } from "../utils/points";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
-import FloodFill, { setColorAtPixel } from "q-floodfill";
+import FloodFill from "q-floodfill";
 import { colorToRGBA, isSameColor } from "../utils/fill";
 
 export type CanvasOptions = {
 	width: number;
 	height: number;
 	bgColor: string;
+	debounce: number;
 };
 
 export class Canvas {
@@ -175,40 +176,42 @@ export class CanvasDraw extends Canvas {
 		floodFill.isSameColor = isSameColor;
 		floodFill.colorToRGBA = colorToRGBA;
 		// floodFill.collectModifiedPixels = true;
-		floodFill.fill(fillColor, x, y, 30); // this.options.fillTolerance
+		floodFill.fill(fillColor, x, y, this.brush.tolerance);
 
+		// TODO: could we `context.drawImage()` with `floodFill.modifiedPixels`, but with blurred edges instead?
+		// const blur = createBlurCanvas(floodFill, fillColor);
+		// context.drawImage(blur.canvas,0,0,canvas.width / devicePixelRatio,canvas.height / devicePixelRatio); // prettier-ignore
+		// OR: could we draw a 1px stroke using a path defined by the `floodFill.modifiedPixels`?
 		context.putImageData(floodFill.imageData, 0, 0);
 	}
 }
 
-function createBlurCanvas(
-	{ imageData: { width, height }, modifiedPixels }: FloodFill,
-	color: string
-) {
-	const { canvas, context } = createTempCanvas(width, height);
-	const fillColor = colorToRGBA(color);
+// function createBlurCanvas(
+// 	{ imageData: { width, height }, modifiedPixels }: FloodFill,
+// 	color: string
+// ) {
+// 	const { canvas, context } = createTempCanvas(width, height);
+// 	const fillColor = colorToRGBA(color);
 
-	const imageData = context.getImageData(0, 0, width, height);
-	modifiedPixels.forEach((val) => {
-		const [x, y] = val.split("|").map(Number);
-		setColorAtPixel(imageData, fillColor, x, y);
-	});
+// 	const imageData = context.getImageData(0, 0, width, height);
+// 	modifiedPixels.forEach((val) => {
+// 		const [x, y] = val.split("|").map(Number);
+// 		setColorAtPixel(imageData, fillColor, x, y);
+// 	});
 
-	context.putImageData(imageData, 0, 0);
-	context.filter = "blur(2px)";
-	context.drawImage(canvas, 0, 0);
+// 	context.putImageData(imageData, 0, 0);
+// 	context.filter = "blur(1px)";
+// 	context.drawImage(canvas, 0, 0);
 
-	return { canvas, imageData };
-}
+// 	return { canvas, imageData };
+// }
 
-function createTempCanvas(width: number, height: number) {
-	const canvas = document.createElement("canvas");
-	const context = canvas.getContext("2d")!;
+// function createTempCanvas(width: number, height: number) {
+// 	const canvas = document.createElement("canvas");
+// 	const context = canvas.getContext("2d")!;
 
-	canvas.width = width;
-	canvas.height = height;
+// 	canvas.width = width;
+// 	canvas.height = height;
 
-	// context.scale(devicePixelRatio, devicePixelRatio);
-
-	return { canvas, context };
-}
+// 	return { canvas, context };
+// }

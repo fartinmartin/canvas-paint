@@ -1,4 +1,4 @@
-import { LazyBrush } from "lazy-brush"; // @ts-ignore
+import { Coordinates, LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
 import { EventEmitter } from "./Events";
 import { Point } from "./Point";
@@ -8,23 +8,48 @@ export type Cap = "butt" | "round" | "square";
 export type Join = "round" | "bevel" | "miter";
 export type BrushPayload = ReturnType<() => Brush["payload"]>;
 
-export type BrushOptions = {};
+export type BrushOptions = {
+	brush?: {
+		size?: number;
+		color?: string;
+		mode?: Mode;
+		cap?: Cap;
+		join?: Join;
+		tolerance?: number;
+	};
+	lazy?: {
+		radius?: number;
+		enabled?: boolean;
+		initialPoint?: Coordinates;
+	};
+};
 
 export class Brush {
 	public events = new EventEmitter();
 	private _isDrawing = false;
 
-	private _size = 5; // TODO: needs to react to Paint.scale somehow
-	private _color = "tomato";
-	private _mode: Mode = "draw";
-	private _cap: Cap = "round";
+	private _size: number;
+	private _color: string;
+	private _mode: Mode;
+	private _cap: Cap;
+	private _join: Join;
+	private _tolerance: number;
 
-	private _lazy = new LazyBrush({ radius: 0 }); // should be private? I think so because we need to be able to publish() anytime lazy settings change!
-	// tricky though, because we also need to access lazy methods within OUR classes..
-	// maybe we privatize Paint.brush (with Paint.brush.lazy) and publicize a version of Paint.brush w/o lazy?
+	private _lazy: LazyBrush;
 
 	constructor(private root: HTMLElement, options: BrushOptions) {
-		// console.log(options);
+		this._lazy = new LazyBrush({
+			radius: options.lazy?.radius ?? 0,
+			enabled: options.lazy?.enabled ?? true,
+			initialPoint: options.lazy?.initialPoint ?? { x: 0, y: 0 },
+		});
+
+		this._size = options.brush?.size ?? 5;
+		this._color = options.brush?.color ?? "tomato";
+		this._mode = options.brush?.mode ?? "draw";
+		this._cap = options.brush?.cap ?? "round";
+		this._join = options.brush?.join ?? "round";
+		this._tolerance = options.brush?.tolerance ?? 30;
 
 		this.root.addEventListener("mousemove", (e) =>
 			this.handleMove(e.offsetX, e.offsetY)
@@ -76,10 +101,26 @@ export class Brush {
 		this.events.dispatch("brushUpdate", this.payload);
 	}
 
+	get join() {
+		return this._join;
+	}
+
+	set join(value: Join) {
+		this._join = value;
+		this.events.dispatch("brushUpdate", this.payload);
+	}
+
+	get tolerance() {
+		return this._tolerance;
+	}
+
+	set tolerance(value: number) {
+		this._tolerance = value;
+		this.events.dispatch("brushUpdate", this.payload);
+	}
+
 	get lazy() {
-		// TODO: needs to be limited in what parts of lazy are returned! no updating methods, because we need to publish() when those happen (via the set lazy() method)
-		// could maybe use a proxy?
-		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+		// we need access to our LazyBrush (at least the x and y values), but we don't want to allow anyone to change settings w/o us knowing!
 		return this._lazy;
 	}
 
