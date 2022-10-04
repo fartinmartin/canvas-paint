@@ -5,7 +5,7 @@ import { Grid, GridOptions } from "./canvas/Grid";
 import { CanvasOptions } from "./canvas/Canvas";
 
 import { Brush, BrushPayload, BrushOptions } from "./classes/Brush";
-import { AddPath, CommandStack } from "./classes/Command";
+import { AddClear, AddPath, CommandStack } from "./classes/Command";
 import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
@@ -73,12 +73,22 @@ export class Paint {
 
 		// when brush releases, commit path to artboard and histroy
 		this.brush.events.on("up", (brush: BrushPayload) => {
+			newPath.call(this);
+			this.events.dispatch("end", () => {});
+		});
+
+		// when brush leaves, if we're drawing commit path to artboard and histroy
+		this.brush.events.on("leave", (brush: BrushPayload) => {
+			if (brush.isDrawing) newPath.call(this);
+			this.events.dispatch("leave", () => {}); // this.ui.clear();
+		});
+
+		function newPath(this: Paint) {
 			this.temp.clear();
 			this.artboard.draw(this.path);
 			this.history.execute(new AddPath(this.path));
 			this.points = [];
-			this.events.dispatch("end", () => {});
-		});
+		}
 	}
 
 	removeListeners() {
@@ -87,6 +97,7 @@ export class Paint {
 	}
 
 	resize(entry: ResizeObserverEntry) {
+		this.events.dispatch("resizing", () => {});
 		const width = entry.target.clientWidth;
 		const newDimensions = { width, height: width / this.aspectRatio }; // TODO: have an option to opt out of aspectRatio resizing
 
@@ -95,6 +106,7 @@ export class Paint {
 		});
 
 		this.drawHistory();
+		this.events.dispatch("resized", () => {});
 	}
 
 	get aspectRatio() {
@@ -128,6 +140,12 @@ export class Paint {
 		this.history.redo();
 		this.artboard.clear();
 		this.drawHistory();
+	}
+
+	clear() {
+		this.artboard.clear(), this.temp.clear();
+		this.history.execute(new AddClear());
+		this.points = [];
 	}
 
 	async drawHistory(delay?: number) {

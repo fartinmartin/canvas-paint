@@ -4,7 +4,7 @@ import { Point } from "./Point";
 export class Path {
 	constructor(
 		public points: Point[],
-		public mode: Mode = "draw",
+		public mode: Mode | "clear" = "draw",
 		public scale: number = 1,
 		public cap: Cap = "round",
 		public join: Join = "round",

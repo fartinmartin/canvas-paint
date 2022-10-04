@@ -29,10 +29,14 @@
 				ui: { radius: 10 },
 			});
 
+			demo.events.on("resizing", () => console.log("resizing"));
+			demo.events.on("resized", () => console.log("resized"));
+
 			const controls = document.getElementById("controls");
 			[
 				{ label: "undo", type: "button", callback: () => demo.undo() },
 				{ label: "redo", type: "button", callback: () => demo.redo() },
+				{ label: "clear", type: "button", callback: () => demo.clear() },
 				{
 					label: "setColor",
 					type: "color",

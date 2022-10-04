@@ -1,10 +1,28 @@
-import { Coordinates } from "lazy-brush"; // @ts-ignore
+// @ts-ignore
 import { Catenary } from "catenary-curve";
-
-import { Canvas, CanvasOptions } from "./Canvas";
+import { PaintOptions } from "../Paint";
+import { Canvas } from "./Canvas";
 import { Brush } from "../classes/Brush";
 
-export type UIOptions = {};
+export type UIOptions = {
+	ui?: {
+		show: boolean;
+		brush?: boolean;
+		pointer?: {
+			size?: number;
+			color?: string;
+		};
+		center?: {
+			size?: number;
+			color?: string;
+		};
+		chain?: {
+			dash?: [number, number];
+			width?: number;
+			color?: string;
+		};
+	};
+};
 
 export class UI extends Canvas {
 	private catenary = new Catenary();
@@ -12,12 +30,22 @@ export class UI extends Canvas {
 	constructor(
 		public root: HTMLElement,
 		private brush: Brush,
-		options: CanvasOptions
+		public options: PaintOptions
 	) {
 		super(root, "ui", options);
 	}
 
 	drawInterface() {
+		const { ui } = this.options;
+
+		const noUI =
+			ui?.brush === false &&
+			ui?.pointer?.size === 0 &&
+			ui?.chain?.width === 0 &&
+			ui?.center?.size === 0;
+
+		if (ui?.show === false || noUI) return;
+
 		const pointer = this.brush.lazy.getPointerCoordinates();
 		const brush = this.brush.lazy.getBrushCoordinates();
 
@@ -27,55 +55,52 @@ export class UI extends Canvas {
 		const c = Math.PI * 2;
 
 		// Draw brush point
-		this.context.beginPath();
-		this.context.fillStyle = this.brush.color;
-		const r = this.brush.size * this.scale;
-		this.brush.cap === "round"
-			? this.context.arc(x, y, r / 2, 0, c, true)
-			: this.context.rect(x - r / 2, y - r / 2, r, r);
-		this.context.fill();
-
-		// Draw mouse point
-		this.context.beginPath();
-		this.context.fillStyle = "black"; // could be passed by user's option object (in the constructor)
-		this.context.arc(
-			pointer.x,
-			pointer.y,
-			4, // could be passed by user's option object (in the constructor) remember, this is a radius value not width value!
-			0,
-			c,
-			true
-		);
-		this.context.fill();
-
-		// Draw catenary
-		if (this.brush.lazy.isEnabled()) {
+		if (ui?.brush === true ?? true) {
 			this.context.beginPath();
-			this.context.lineWidth = 2; // could be passed by user's option object (in the constructor)
-			this.context.lineCap = "round";
-			this.context.setLineDash([2, 4]); // could be passed by user's option object (in the constructor)
-			this.context.strokeStyle = "black"; // could be passed by user's option object (in the constructor)
-
-			this.catenary.drawToCanvas(
-				this.context,
-				brush,
-				pointer,
-				this.brush.lazy.radius / 2
-			);
-			this.context.stroke();
+			this.context.fillStyle = this.brush.color;
+			const radius = this.brush.size * this.scale;
+			this.brush.cap === "round"
+				? this.context.arc(x, y, radius / 2, 0, c, true)
+				: this.context.rect(x - radius / 2, y - radius / 2, radius, radius);
+			this.context.fill();
 		}
 
 		// Draw mouse point
-		this.context.beginPath();
-		this.context.fillStyle = "#222222"; // could be passed by user's option object (in the constructor)
-		this.context.arc(
-			x,
-			y,
-			2, // could be passed by user's option object (in the constructor) remember, this is a radius value not width value!
-			0,
-			c,
-			true
-		);
-		this.context.fill();
+		if (!ui?.pointer?.size || (ui?.pointer?.size && ui.pointer.size > 0)) {
+			this.context.beginPath();
+
+			this.context.fillStyle = ui?.pointer?.color ?? "#000000";
+			const radius = (ui?.pointer?.size ?? 8) / 2;
+			this.context.arc(pointer.x, pointer.y, radius, 0, c, true);
+
+			this.context.fill();
+		}
+
+		// Draw catenary
+		if (this.brush.lazy.isEnabled() && ui?.chain?.width && ui.chain.width > 0) {
+			this.context.beginPath();
+
+			this.context.lineWidth = ui?.chain?.width ?? 2;
+			this.context.lineCap = "round";
+
+			this.context.setLineDash(ui?.chain?.dash ?? [2, 4]);
+			this.context.strokeStyle = ui?.chain?.color ?? "#000000";
+
+			const radius = this.brush.lazy.radius / 2;
+			this.catenary.drawToCanvas(this.context, brush, pointer, radius);
+
+			this.context.stroke();
+		}
+
+		// Draw brush center point
+		if (ui?.center?.size ?? true) {
+			this.context.beginPath();
+
+			this.context.fillStyle = ui?.center?.color ?? "#000000";
+			const radius = (ui?.center?.size ?? 4) / 2;
+			this.context.arc(x, y, radius, 0, c, true);
+
+			this.context.fill();
+		}
 	}
 }

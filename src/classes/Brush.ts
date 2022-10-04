@@ -57,7 +57,7 @@ export class Brush {
 
 		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
 		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
-		// this.root.addEventListener("mouseleave", (e) => this.handleUp(e)); // this commits a new line every time mouse leaves
+		this.root.addEventListener("mouseleave", (e) => this.handleLeave(e));
 	}
 
 	get isDrawing() {
@@ -158,5 +158,11 @@ export class Brush {
 		event.preventDefault();
 		this._isDrawing = false;
 		this.events.dispatch("up", this.payload);
+	}
+
+	private handleLeave(event: MouseEvent) {
+		event.preventDefault();
+		this.events.dispatch("leave", this.payload);
+		this._isDrawing = false;
 	}
 }

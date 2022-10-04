@@ -89,6 +89,8 @@ export class CanvasDraw extends Canvas {
 	async draw(p: Path, delay?: number) {
 		const path = scalePath(p, this.scale); // scale here so that drawings are scaled whilst drawing, but also whislt playing back history
 
+		if (path.mode === "clear") return this.clear();
+
 		if (!delay) {
 			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path); // await this.drawFill()?
 		} else {

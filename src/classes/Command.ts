@@ -1,4 +1,5 @@
 import { Path } from "./Path";
+import { Point } from "./Point";
 
 export class CommandStack {
 	private _stack: string[] = [];
@@ -48,6 +49,18 @@ export class AddPath extends Command {
 
 	execute(state: Path[]) {
 		state.push(this._value);
+		return state;
+	}
+}
+
+export class AddClear extends Command {
+	constructor() {
+		super();
+	}
+
+	execute(state: Path[]) {
+		const path = new Path([new Point(0, 0)], "clear", 1, "round", "round", 0);
+		state.push(path);
 		return state;
 	}
 }
