@@ -14,6 +14,11 @@ export class CommandStack {
 		return JSON.parse(latestState) as Path[];
 	}
 
+	reset() {
+		this._stack = ["[]"];
+		this._redo = [];
+	}
+
 	execute(command: Command) {
 		const commandPath = command.execute(this.state);
 		const stringPath = JSON.stringify(commandPath);

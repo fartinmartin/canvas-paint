@@ -11,13 +11,16 @@ import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
 
 import { namespace } from "./utils/uuid";
-import { createStyles } from "./utils/styles";
+import { createStyles, replaceRule } from "./utils/styles";
 import { resizeObserver } from "./utils/resize";
 import { scalePoint } from "./utils/points";
 
 export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOptions; // prettier-ignore
 
 export class Paint {
+	static className = namespace + "container";
+	static styles: CSSStyleSheet;
+
 	public ui: UI;
 	public temp: Temp;
 	public artboard: Artboard;
@@ -30,10 +33,9 @@ export class Paint {
 	public points: Point[] = [];
 
 	constructor(public root: HTMLElement, private options: PaintOptions) {
-		const className = namespace + "container";
-		this.root.classList.add(className);
+		this.root.classList.add(Paint.className);
+		Paint.styles = createStyles(Paint.className, namespace, options)!;
 
-		createStyles(className, namespace, options);
 		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
 
 		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
@@ -96,7 +98,7 @@ export class Paint {
 		this.events.removeAllListeners();
 	}
 
-	resize(entry: ResizeObserverEntry) {
+	async resize(entry: ResizeObserverEntry) {
 		this.events.dispatch("resizing", () => {});
 		const width = entry.target.clientWidth;
 		const newDimensions = { width, height: width / this.aspectRatio }; // TODO: have an option to opt out of aspectRatio resizing
@@ -105,7 +107,7 @@ export class Paint {
 			canvas.resize(newDimensions);
 		});
 
-		this.drawHistory();
+		await this.drawHistory();
 		this.events.dispatch("resized", () => {});
 	}
 
@@ -118,14 +120,8 @@ export class Paint {
 	}
 
 	get path() {
-		return new Path(
-			this.points,
-			this.brush.mode,
-			this.scale,
-			this.brush.cap,
-			this.brush.join,
-			this.brush.tolerance
-		);
+		const { mode, cap, join, tolerance } = this.brush;
+		return new Path(this.points, mode, this.scale, cap, join, tolerance);
 	}
 
 	undo() {
@@ -143,9 +139,47 @@ export class Paint {
 	}
 
 	clear() {
-		this.artboard.clear(), this.temp.clear();
+		this.artboard.clear();
+		this.temp.clear();
 		this.history.execute(new AddClear());
 		this.points = [];
+	}
+
+	destroy() {
+		this.clear();
+		this.history.reset();
+	}
+
+	save() {
+		return {
+			width: this.options.width,
+			height: this.options.height,
+			paths: this.history.state,
+		};
+	}
+
+	async load(
+		{ width, height, paths }: ReturnType<typeof this.save>,
+		delay?: number
+	) {
+		this.destroy();
+
+		this.options.width = width;
+		this.options.height = height;
+
+		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
+			canvas.resize({ width, height });
+		});
+
+		replaceRule(Paint.styles, `.${Paint.className} { max-width: ${width}px; max-height: ${height}px; }`, 3); // prettier-ignore
+		replaceRule(Paint.styles, `.${Paint.className} { aspect-ratio: ${width} / ${height}; }`, 4); // prettier-ignore
+
+		paths.forEach((path) => {
+			const c = path.mode === "clear" ? new AddClear() : new AddPath(path);
+			this.history.execute(c);
+		});
+
+		return this.drawHistory(delay);
 	}
 
 	async drawHistory(delay?: number) {
