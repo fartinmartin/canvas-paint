@@ -13,8 +13,7 @@ export function resizeObserver(
 			const { width, height } = entry.target.getBoundingClientRect();
 			// prevent infinite resize loops if canvas CSS dimensions are not explicitely set
 			if (~~width !== ~~prevWidth || ~~height !== ~~prevHeight) {
-				callback(entry);
-				(prevWidth = width), (prevHeight = height);
+				callback(entry), (prevWidth = width), (prevHeight = height);
 			}
 		}, delay)
 	);

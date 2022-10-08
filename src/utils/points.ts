@@ -9,9 +9,6 @@ export function getMidCoords(p1: Coordinates, p2: Coordinates) {
 	};
 }
 
-// type ChangeFields<T, R> = Omit<T, keyof R> & R;
-// export type PathLike = ChangeFields<Path, { points: Omit<Point, "coords">[] }>;
-
 export function scalePath(path: Path, scaleTo: number) {
 	let p = JSON.parse(JSON.stringify(path)); // can we do w/o this?
 	const drawnAt = path.scale;

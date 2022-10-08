@@ -6,9 +6,8 @@ import { getMidCoords, scalePath } from "../utils/points";
 import { namespace, uuid } from "../utils/uuid";
 import { waitFor } from "../utils/waitFor";
 
-import combinate from "combinate";
-import FloodFill, { setColorAtPixel } from "q-floodfill";
-import { colorToRGBA, isSameColor } from "../utils/fill";
+import FloodFill from "q-floodfill";
+import { colorToRGBA, isSameColor, createOutlineCanvas } from "../utils/fill";
 
 export type CanvasOptions = {
 	width: number;
@@ -32,7 +31,6 @@ export class Canvas {
 		this.context = this.canvas.getContext("2d")!;
 		this.canvas.id = this.id = uuid();
 
-		// set canvas dimensions in case they were passed via options
 		this.canvas.width = options?.width || this.canvas.width;
 		this.canvas.height = options?.height || this.canvas.height;
 
@@ -160,10 +158,9 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawFill(path: Path) {
-		// TODO: ⚠️ what's the best way to get access to this.temp?
 		if (this.canvas.className === `${namespace}temp`) return;
 
-		// TODO: ⚠️ what's the best way to get access to this.artboard? // const { context, canvas } = this.artboard;
+		// TODO: ⚠️ what's the best way to get access to this.artboard?
 		const canvas = this.root.querySelector(`.${namespace}artboard`);
 		if (!canvas || !(canvas instanceof HTMLCanvasElement)) return;
 
@@ -188,68 +185,4 @@ export class CanvasDraw extends Canvas {
 		const out = createOutlineCanvas(floodFill, fillColor);
 		context.drawImage(out.canvas, 0, 0, canvas.width / devicePixelRatio, canvas.height / devicePixelRatio); // prettier-ignore
 	}
-}
-
-function createOutlineCanvas(
-	{ imageData: { width, height }, modifiedPixels }: FloodFill,
-	color: string
-) {
-	const { canvas, context } = createTempCanvas(width, height);
-	const fillColor = colorToRGBA(color);
-
-	const imageData = context.getImageData(0, 0, width, height);
-	modifiedPixels.forEach((val) => {
-		const [x, y] = val.split("|").map(Number);
-		setColorAtPixel(imageData, fillColor, x, y);
-	});
-
-	context.putImageData(imageData, 0, 0);
-
-	const original = createTempCanvas(width, height);
-	original.context.putImageData(imageData, 0, 0);
-
-	const strokeWidth = 0.125;
-	// context.filter = "blur(0.25px)";
-
-	combinate({
-		x: [0, 1, -1],
-		y: [0, 1, -1],
-	}).forEach((offset) => {
-		context.drawImage(canvas, offset.x * strokeWidth, offset.y * strokeWidth);
-	});
-
-	context.globalCompositeOperation = "destination-out";
-	context.drawImage(original.canvas, 0, 0);
-
-	return { canvas, imageData, original };
-}
-
-// function createBlurCanvas(
-// 	{ imageData: { width, height }, modifiedPixels }: FloodFill,
-// 	color: string
-// ) {
-// 	const { canvas, context } = createTempCanvas(width, height);
-// 	const fillColor = colorToRGBA(color);
-
-// 	const imageData = context.getImageData(0, 0, width, height);
-// 	modifiedPixels.forEach((val) => {
-// 		const [x, y] = val.split("|").map(Number);
-// 		setColorAtPixel(imageData, fillColor, x, y);
-// 	});
-
-// 	context.putImageData(imageData, 0, 0);
-// 	context.filter = "blur(1px)";
-// 	context.drawImage(canvas, 0, 0);
-
-// 	return { canvas, imageData };
-// }
-
-function createTempCanvas(width: number, height: number) {
-	const canvas = document.createElement("canvas");
-	const context = canvas.getContext("2d")!;
-
-	canvas.width = width;
-	canvas.height = height;
-
-	return { canvas, context };
 }

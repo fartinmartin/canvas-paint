@@ -51,10 +51,7 @@ export class Brush {
 		this._join = options.brush?.join ?? "round";
 		this._tolerance = options.brush?.tolerance ?? 30;
 
-		this.root.addEventListener("mousemove", (e) =>
-			this.handleMove(e.offsetX, e.offsetY)
-		);
-
+		this.root.addEventListener("mousemove", (e) => this.handleMove(e.offsetX, e.offsetY)); // prettier-ignore
 		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
 		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
 		this.root.addEventListener("mouseleave", (e) => this.handleLeave(e));

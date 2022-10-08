@@ -10,4 +10,7 @@ export default defineConfig({
 			fileName: "canvas-paint",
 		},
 	},
+	define: {
+		APP_VERSION: JSON.stringify(process.env.npm_package_version),
+	},
 });

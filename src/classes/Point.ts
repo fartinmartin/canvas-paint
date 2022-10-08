@@ -2,11 +2,7 @@ export class Point {
 	constructor(
 		public x: number,
 		public y: number,
-		public color: string = "#000",
-		public size: number = 5
+		public color: string,
+		public size: number
 	) {}
-
-	get coords() {
-		return { x: this.x, y: this.y };
-	}
 }

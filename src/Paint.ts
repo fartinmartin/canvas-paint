@@ -155,6 +155,7 @@ export class Paint {
 			width: this.options.width,
 			height: this.options.height,
 			paths: this.history.state,
+			version: APP_VERSION, // see `./vite.config.js` and `./src/vite-env.d.ts`: true,
 		};
 	}
 
@@ -183,16 +184,19 @@ export class Paint {
 	}
 
 	async drawHistory(delay?: number) {
+		this.events.dispatch("drawing", () => {});
 		this.artboard.clear();
 		if (delay) {
 			for (const path of this.history.state) {
 				await this.temp.draw(path, delay); // draw lines point-by-point to temp
 				this.artboard.draw(path); // draw lines immediately to artboard
 				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness)
+				this.events.dispatch("drawingPath", () => {});
 			}
 			this.drawHistory(); // run this again w/o delay to remove crunchiness
 		} else {
 			for (const path of this.history.state) await this.artboard.draw(path);
 		}
+		this.events.dispatch("drawn", () => {});
 	}
 }
