@@ -8,51 +8,60 @@
 		<title>canvas-paint ⬝ demo</title>
 	</head>
 	<body>
-		<h1>canvas-paint ⬝ demo</h1>
+		<header>
+			<h1>canvas-paint ⬝ demo</h1>
+		</header>
+
 		<main>
-			<div id="controls">
-				<div class="history">
-					<button onclick="demo.undo()">undo</button>
-					<button onclick="demo.redo()">redo</button>
+			<aside>
+				<div id="controls">
+					<div class="history">
+						<button onclick="demo.undo()">undo</button>
+						<button onclick="demo.redo()">redo</button>
+					</div>
+					<div class="mode">
+						<button onclick="demo.brush.mode = `draw`">draw</button>
+						<button onclick="demo.brush.mode = `erase`">erase</button>
+						<button onclick="demo.brush.mode = `fill`">fill</button>
+					</div>
+					<div class="brush">
+						<button onclick="demo.brush.size--">brush-</button>
+						<button onclick="demo.brush.size++">brush+</button>
+						<input onchange="updateBrushColor(this)" type="color" />
+					</div>
+					<div class="radius">
+						<button onclick="demo.brush.lazy.radius--">radius-</button>
+						<button onclick="demo.brush.lazy.radius++">radius+</button>
+					</div>
+					<div class="tolerance">
+						<button onclick="demo.brush.tolerance--">tolerance-</button>
+						<button onclick="demo.brush.tolerance++">tolerance+</button>
+					</div>
+					<div class="remove">
+						<button onclick="demo.clear()">clear</button>
+						<button onclick="demo.destroy()">destroy</button>
+					</div>
+					<div class="io">
+						<!-- prettier-ignore -->
+						<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
+						<!-- prettier-ignore -->
+						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
+						<button onclick="png">png</button>
+						<button onclick="demo.drawHistory(10)">draw</button>
+					</div>
+					<div class="drawing">
+						<input onchange="updateBgColor(this)" type="color" />
+						<input onchange="updateWidth(this)" type="number" />
+						<input onchange="updateHeight(this)" type="number" />
+					</div>
 				</div>
-				<div class="mode">
-					<button onclick="demo.brush.mode = `draw`">draw</button>
-					<button onclick="demo.brush.mode = `erase`">erase</button>
-					<button onclick="demo.brush.mode = `fill`">fill</button>
-				</div>
-				<div class="brush">
-					<button onclick="demo.brush.size--">brush-</button>
-					<button onclick="demo.brush.size++">brush+</button>
-					<input onchange="updateBrushColor(this)" type="color" />
-				</div>
-				<div class="radius">
-					<button onclick="demo.brush.lazy.radius--">radius-</button>
-					<button onclick="demo.brush.lazy.radius++">radius+</button>
-				</div>
-				<div class="tolerance">
-					<button onclick="demo.brush.tolerance--">tolerance-</button>
-					<button onclick="demo.brush.tolerance++">tolerance+</button>
-				</div>
-				<div class="remove">
-					<button onclick="demo.clear()">clear</button>
-					<button onclick="demo.destroy()">destroy</button>
-				</div>
-				<div class="io">
-					<!-- prettier-ignore -->
-					<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
-					<!-- prettier-ignore -->
-					<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
-					<button onclick="png">png</button>
-					<button onclick="demo.drawHistory(10)">draw</button>
-				</div>
-				<div class="drawing">
-					<input onchange="updateBgColor(this)" type="color" />
-					<input onchange="updateWidth(this)" type="number" />
-					<input onchange="updateHeight(this)" type="number" />
-				</div>
-			</div>
-			<div id="app"></div>
+			</aside>
+
+			<section>
+				<div id="app"></div>
+			</section>
 		</main>
+
 		<script type="module">
 			import { Paint } from "./src/index.ts";
 
@@ -69,8 +78,9 @@
 
 			demo.events.on("resizing", () => console.log("resizing"));
 
-			// demo.load(JSON.parse(localStorage.getItem("drawing")), 10);
+			demo.load(JSON.parse(localStorage.getItem("drawing")), 10);
 		</script>
+
 		<script>
 			window.addEventListener("load", () => {
 				const brush = document.querySelectorAll("input[type='color']")[0];

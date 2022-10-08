@@ -4,6 +4,10 @@
 	box-sizing: border-box;
 }
 
+:root {
+	--header-height: calc(1.25rem + 2rem);
+}
+
 html,
 body {
 	margin: 0;
@@ -12,7 +16,6 @@ body {
 
 body {
 	font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
-	padding: 1rem;
 }
 
 input[type="number"],
@@ -40,28 +43,49 @@ button:hover {
 	background-color: lightgray;
 }
 
+header {
+	height: var(--header-height);
+	border-bottom: 1px solid slategray;
+	padding: 1rem;
+}
+
 h1 {
-	margin-top: 0;
+	margin: 0;
+	font-size: 1.25rem;
+	line-height: 1;
+	margin-top: -1px; /* now this is just silly :P */
 }
 
 main {
 	display: flex;
 }
 
+aside {
+	overflow-y: scroll;
+	height: calc(100vh - var(--header-height));
+
+	padding: 1rem;
+	padding-bottom: calc(var(--header-height) / 2);
+	border-right: 1px dashed slategray;
+
+	flex-shrink: 0;
+	max-width: 15ch;
+}
+
+section {
+	padding: 1rem;
+	flex-basis: 100%;
+	width: 0; /* this is required for flex-basis to work? */
+	margin-top: 2px; /* align to controls */
+}
+
 #app {
 	outline: 2px solid salmon;
-	flex-grow: 1; /* as a flex child we need to be greedy! otherwise we won't resize—we will shrink, but we won't grow! */
-	align-self: flex-start; /* also, as a flex child we need to be explicitly aligned! otherwise we will grow vertically when we don't want to! */
 }
 
 #controls {
 	display: flex;
 	flex-direction: column;
-	margin-right: 1rem;
-	margin-top: -2px;
-	max-width: 12ch;
-	/* overflow-y: scroll; */
-	/* max-height: calc(100vh - 7.5rem);/ */
 }
 
 #controls > div {
@@ -69,12 +93,3 @@ main {
 	flex-direction: column;
 	margin-bottom: 0.5rem;
 }
-
-/* .dimensions {
-	display: flex;
-	max-width: 100%;
-}
-
-.dimensions > * {
-	flex-shrink: 1;
-} */
