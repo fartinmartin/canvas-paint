@@ -1,0 +1,68 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: Menlo, Consolas, Monaco, "Lucida Console", monospace;
+	padding: 1rem;
+}
+
+input[type="color"],
+button {
+	all: initial;
+	font-family: inherit;
+	border: 2px inset slategray;
+	background-color: whitesmoke;
+	user-select: none;
+	text-align: center;
+	padding: 0.25em;
+	cursor: pointer;
+	line-height: 1.25;
+	height: 1.25rem;
+}
+
+button:is(:not(:last-child)) {
+	border-bottom: 0;
+}
+
+button:hover {
+	background-color: lightgray;
+}
+
+h1 {
+	margin-top: 0;
+}
+
+main {
+	display: flex;
+}
+
+#app {
+	outline: 2px solid salmon;
+	flex-grow: 1; /* as a flex child we need to be greedy! otherwise we won't resize—we will shrink, but we won't grow! */
+	align-self: flex-start; /* also, as a flex child we need to be explicitly aligned! otherwise we will grow vertically when we don't want to! */
+}
+
+#controls {
+	display: flex;
+	flex-direction: column;
+	margin-right: 1rem;
+	margin-top: -2px;
+	max-width: 20ch;
+	overflow-y: scroll;
+	max-height: calc(100vh - 7.5rem);
+}
+
+#controls > div {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 0.5rem;
+}

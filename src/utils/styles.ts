@@ -25,9 +25,9 @@ export function createInstanceStyles(
 ) {
 	const styleSheet = createStyleElement(id);
 
-	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { background: ${options.bgColor}; }`, 0); // prettier-ignore
-	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { max-width: ${options.width}px; max-height: ${options.height}px; }`, 1); // prettier-ignore
-	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { aspect-ratio: ${options.width} / ${options.height}; }`, 2); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { background: ${options.bgColor}; }`, 0); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { max-width: ${options.width}px; max-height: ${options.height}px; }`, 1); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { aspect-ratio: ${options.width} / ${options.height}; }`, 2); // prettier-ignore
 
 	return styleSheet.sheet;
 }
@@ -50,6 +50,11 @@ export function replaceRule(
 	newRule: string,
 	index: number
 ) {
-	if (sheet.cssRules.item(index)) sheet.deleteRule(index);
+	if (sheet.cssRules.item(index)) {
+		// console.log(`deleting ${index} of ${sheet.cssRules.length}`);
+		sheet.deleteRule(index);
+	}
+	// console.log(`inserting ${index} of ${sheet.cssRules.length}`);
+	// console.log(newRule);
 	sheet.insertRule(newRule, index);
 }

@@ -8,12 +8,13 @@ import { waitFor } from "../utils/waitFor";
 
 import FloodFill from "q-floodfill";
 import { colorToRGBA, isSameColor, createOutlineCanvas } from "../utils/fill";
+import { toHex } from "color2k";
 
 export type CanvasOptions = {
 	width: number;
 	height: number;
-	bgColor: string;
-	debounce: number;
+	bgColor?: string;
+	debounce?: number;
 };
 
 export class Canvas {
@@ -108,7 +109,7 @@ export class CanvasDraw extends Canvas {
 		const { size, color } = point;
 
 		// we need to see the temp canvas paint erasing paths
-		const isTemp = this.canvas.classList.contains("canvas-paint_temp");
+		const isTemp = this.canvas.classList.contains(`${namespace}temp`);
 		this.context.globalCompositeOperation =
 			isTemp || mode !== "erase" ? "source-over" : "destination-out";
 
@@ -116,8 +117,10 @@ export class CanvasDraw extends Canvas {
 		this.context.lineCap = cap;
 		this.context.lineJoin = join;
 
-		this.context.strokeStyle = mode === "erase" ? this.options.bgColor : color;
-		this.context.fillStyle = mode === "erase" ? this.options.bgColor : color;
+		const bgColor = this.options.bgColor ?? "white";
+
+		this.context.strokeStyle = mode === "erase" ? bgColor : color;
+		this.context.fillStyle = mode === "erase" ? bgColor : color;
 	}
 
 	protected drawPath(path: Path) {

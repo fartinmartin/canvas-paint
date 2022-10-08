@@ -3,123 +3,75 @@
 	<head>
 		<meta charset="UTF-8" />
 		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<link rel="stylesheet" href="/style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>canvas-paint</title>
-		<style>
-			html {
-				background: rgb(50, 50, 50);
-			}
-			#app {
-				outline: 1px solid salmon;
-				margin-bottom: 0.5rem;
-			}
-		</style>
+		<title>canvas-paint ⬝ demo</title>
 	</head>
 	<body>
-		<div id="app"></div>
-		<div id="controls"></div>
+		<h1>canvas-paint ⬝ demo</h1>
+		<main>
+			<div id="controls">
+				<div class="history">
+					<button onclick="demo.undo()">undo</button>
+					<button onclick="demo.redo()">redo</button>
+				</div>
+				<div class="mode">
+					<button onclick="demo.brush.mode = `draw`">draw</button>
+					<button onclick="demo.brush.mode = `erase`">erase</button>
+					<button onclick="demo.brush.mode = `fill`">fill</button>
+				</div>
+				<div class="brush">
+					<button onclick="demo.brush.size--">brush-</button>
+					<button onclick="demo.brush.size++">brush+</button>
+					<input onchange="updateBrushColor(this)" type="color" />
+				</div>
+				<div class="radius">
+					<button onclick="demo.brush.lazy.radius--">radius-</button>
+					<button onclick="demo.brush.lazy.radius++">radius+</button>
+				</div>
+				<div class="tolerance">
+					<button onclick="demo.brush.tolerance--">tolerance-</button>
+					<button onclick="demo.brush.tolerance++">tolerance+</button>
+				</div>
+				<div class="remove">
+					<button onclick="demo.clear()">clear</button>
+					<button onclick="demo.destroy()">destroy</button>
+				</div>
+				<div class="io">
+					<button onclick="save">save</button>
+					<button onclick="load">load</button>
+					<button onclick="png">png</button>
+					<button onclick="demo.drawHistory(10)">draw</button>
+				</div>
+				<div class="background">
+					<input onchange="updateBgColor(this)" type="color" />
+				</div>
+			</div>
+			<div id="app"></div>
+		</main>
 		<script type="module">
-			import { Paint } from "/src/index.ts";
+			import { Paint } from "./src/index.ts";
 
 			const app = document.getElementById("app");
+
 			const demo = new Paint(app, {
-				width: 800,
-				height: 800,
+				width: 400,
+				height: 400,
 				bgColor: "whitesmoke",
-				ui: { radius: 10 },
 			});
-			demo
-				.load(JSON.parse(localStorage.getItem("drawing")), 10)
-				.then((x) => console.log("done!"));
 
-			// demo.events.on("resizing", () => console.log("resizing"));
-			// demo.events.on("resized", () => console.log("resized"));
-
-			const controls = document.getElementById("controls");
-			[
-				{ label: "undo", type: "button", callback: () => demo.undo() },
-				{ label: "redo", type: "button", callback: () => demo.redo() },
-				{ label: "clear", type: "button", callback: () => demo.clear() },
-				{
-					label: "save",
-					type: "button",
-					callback: () =>
-						localStorage.setItem("drawing", JSON.stringify(demo.save())),
-				},
-				{
-					label: "load",
-					type: "button",
-					callback: () =>
-						demo.load(JSON.parse(localStorage.getItem("drawing"))),
-				},
-				{
-					label: "setColor",
-					type: "color",
-					value: demo.brush.color,
-					callback: (e) => (demo.brush.color = e.target.value),
-				},
-				{
-					label: "setSize",
-					type: "range",
-					max: 100,
-					value: demo.brush.size,
-					callback: (e) => (demo.brush.size = e.target.value),
-				},
-				{
-					label: "draw",
-					type: "button",
-					callback: () => (demo.brush.mode = "draw"),
-				},
-				{
-					label: "erase",
-					type: "button",
-					callback: () => (demo.brush.mode = "erase"),
-				},
-				{
-					label: "fill",
-					type: "button",
-					callback: () => (demo.brush.mode = "fill"),
-				},
-				{
-					label: "setCap",
-					type: "button",
-					callback: () => (demo.brush.cap = "butt"),
-				},
-				{
-					label: "setRadius",
-					type: "range",
-					max: 50,
-					value: demo.brush.lazy.radius,
-					callback: (e) => (demo.brush.lazy.radius = e.target.value),
-				},
-				{
-					label: "drawOn",
-					type: "button",
-					callback: () => demo.drawHistory(10),
-				},
-				{
-					label: "tolerance",
-					type: "range",
-					max: 255,
-					value: demo.brush.tolerance,
-					callback: (e) => (demo.brush.tolerance = e.target.value),
-				},
-			].forEach((method) => {
-				const input = document.createElement("input");
-
-				input.value = method.label;
-				input.type = method.type;
-				if (method.max) input.max = method.max;
-				if (method.value) input.value = method.value;
-
-				controls.appendChild(input);
-
-				if (method.type === "button") {
-					input.addEventListener("click", method.callback);
-				} else {
-					input.addEventListener("change", method.callback);
-				}
+			// @ts-ignore ⚠️ don't do this in production :)
+			window.demo = demo;
+		</script>
+		<script>
+			window.addEventListener("load", () => {
+				const brush = document.querySelectorAll("input[type='color']")[0];
+				const bg = document.querySelectorAll("input[type='color']")[1];
+				brush.value = demo.brush.color;
+				bg.value = demo.options.bgColor; // not guarenteed to be a hex value
 			});
+			const updateBrushColor = (target) => (demo.brush.color = target.value);
+			const updateBgColor = (target) => (demo.options.bgColor = target.value);
 		</script>
 	</body>
 </html>

@@ -19,8 +19,8 @@ export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOption
 
 export class Paint {
 	static className = namespace + "container";
+	static baseStyles = createBaseStyles(Paint.className, namespace)!;
 	public id: string = uuid();
-	static baseStyles: CSSStyleSheet;
 	public instanceStyles: CSSStyleSheet;
 
 	public ui: UI;
@@ -37,7 +37,6 @@ export class Paint {
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.root.classList.add(Paint.className);
 		this.root.dataset.canvasPaintId = this.id;
-		Paint.baseStyles = createBaseStyles(Paint.className, namespace)!;
 		this.instanceStyles = createInstanceStyles(this.id, options)!;
 
 		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
