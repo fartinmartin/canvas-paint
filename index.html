@@ -38,8 +38,10 @@
 					<button onclick="demo.destroy()">destroy</button>
 				</div>
 				<div class="io">
-					<button onclick="save">save</button>
-					<button onclick="load">load</button>
+					<!-- prettier-ignore -->
+					<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
+					<!-- prettier-ignore -->
+					<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
 					<button onclick="png">png</button>
 					<button onclick="demo.drawHistory(10)">draw</button>
 				</div>
@@ -54,9 +56,9 @@
 		<script type="module">
 			import { Paint } from "./src/index.ts";
 
-			const app = document.getElementById("app");
+			const root = document.getElementById("app");
 
-			const demo = new Paint(app, {
+			const demo = new Paint(root, {
 				width: 400,
 				height: 400,
 				bgColor: "#fafafa", // "whitesmoke",
@@ -64,6 +66,10 @@
 
 			// @ts-ignore ⚠️ don't do this in production :)
 			window.demo = demo;
+
+			demo.events.on("resizing", () => console.log("resizing"));
+
+			// demo.load(JSON.parse(localStorage.getItem("drawing")), 10);
 		</script>
 		<script>
 			window.addEventListener("load", () => {
