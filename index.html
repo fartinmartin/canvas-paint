@@ -43,8 +43,10 @@
 					<button onclick="png">png</button>
 					<button onclick="demo.drawHistory(10)">draw</button>
 				</div>
-				<div class="background">
+				<div class="drawing">
 					<input onchange="updateBgColor(this)" type="color" />
+					<input onchange="updateWidth(this)" type="number" />
+					<input onchange="updateHeight(this)" type="number" />
 				</div>
 			</div>
 			<div id="app"></div>
@@ -57,7 +59,7 @@
 			const demo = new Paint(app, {
 				width: 400,
 				height: 400,
-				bgColor: "whitesmoke",
+				bgColor: "#fafafa", // "whitesmoke",
 			});
 
 			// @ts-ignore ⚠️ don't do this in production :)
@@ -69,9 +71,15 @@
 				const bg = document.querySelectorAll("input[type='color']")[1];
 				brush.value = demo.brush.color;
 				bg.value = demo.options.bgColor; // not guarenteed to be a hex value
+				const width = document.querySelectorAll("input[type='number']")[0];
+				const height = document.querySelectorAll("input[type='number']")[1];
+				width.value = demo.options.width;
+				height.value = demo.options.height;
 			});
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
 			const updateBgColor = (target) => (demo.options.bgColor = target.value);
+			const updateWidth = (target) => (demo.options.width = target.value);
+			const updateHeight = (target) => (demo.options.height = target.value);
 		</script>
 	</body>
 </html>

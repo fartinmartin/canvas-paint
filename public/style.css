@@ -15,6 +15,7 @@ body {
 	padding: 1rem;
 }
 
+input[type="number"],
 input[type="color"],
 button {
 	all: initial;
@@ -29,6 +30,8 @@ button {
 	height: 1.25rem;
 }
 
+input[type="number"]:is(:not(:last-child)),
+input[type="color"]:is(:not(:last-child)),
 button:is(:not(:last-child)) {
 	border-bottom: 0;
 }
@@ -56,9 +59,9 @@ main {
 	flex-direction: column;
 	margin-right: 1rem;
 	margin-top: -2px;
-	max-width: 20ch;
-	overflow-y: scroll;
-	max-height: calc(100vh - 7.5rem);
+	max-width: 12ch;
+	/* overflow-y: scroll; */
+	/* max-height: calc(100vh - 7.5rem);/ */
 }
 
 #controls > div {
@@ -66,3 +69,12 @@ main {
 	flex-direction: column;
 	margin-bottom: 0.5rem;
 }
+
+/* .dimensions {
+	display: flex;
+	max-width: 100%;
+}
+
+.dimensions > * {
+	flex-shrink: 1;
+} */
