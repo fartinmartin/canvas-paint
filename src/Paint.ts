@@ -10,8 +10,8 @@ import { EventEmitter } from "./classes/Events";
 import { Path } from "./classes/Path";
 import { Point } from "./classes/Point";
 
-import { namespace } from "./utils/uuid";
-import { createStyles, replaceRule } from "./utils/styles";
+import { namespace, uuid } from "./utils/uuid";
+import { createBaseStyles, createInstanceStyles } from "./utils/styles";
 import { resizeObserver } from "./utils/resize";
 import { scalePoint } from "./utils/points";
 
@@ -19,7 +19,9 @@ export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOption
 
 export class Paint {
 	static className = namespace + "container";
-	static styles: CSSStyleSheet;
+	public id: string = uuid();
+	static baseStyles: CSSStyleSheet;
+	public instanceStyles: CSSStyleSheet;
 
 	public ui: UI;
 	public temp: Temp;
@@ -34,7 +36,9 @@ export class Paint {
 
 	constructor(public root: HTMLElement, private options: PaintOptions) {
 		this.root.classList.add(Paint.className);
-		Paint.styles = createStyles(Paint.className, namespace, options)!;
+		this.root.dataset.canvasPaintId = this.id;
+		Paint.baseStyles = createBaseStyles(Paint.className, namespace)!;
+		this.instanceStyles = createInstanceStyles(this.id, options)!;
 
 		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
 
@@ -154,13 +158,14 @@ export class Paint {
 		return {
 			width: this.options.width,
 			height: this.options.height,
+			bgColor: this.options.bgColor,
 			paths: this.history.state,
 			version: APP_VERSION, // see `./vite.config.js` and `./src/vite-env.d.ts`: true,
 		};
 	}
 
 	async load(
-		{ width, height, paths }: ReturnType<typeof this.save>,
+		{ width, height, paths, bgColor }: ReturnType<typeof this.save>,
 		delay?: number
 	) {
 		this.destroy();
@@ -172,8 +177,7 @@ export class Paint {
 			canvas.resize({ width, height });
 		});
 
-		replaceRule(Paint.styles, `.${Paint.className} { max-width: ${width}px; max-height: ${height}px; }`, 3); // prettier-ignore
-		replaceRule(Paint.styles, `.${Paint.className} { aspect-ratio: ${width} / ${height}; }`, 4); // prettier-ignore
+		createInstanceStyles(this.id, { width, height, bgColor });
 
 		paths.forEach((path) => {
 			const c = path.mode === "clear" ? new AddClear() : new AddPath(path);

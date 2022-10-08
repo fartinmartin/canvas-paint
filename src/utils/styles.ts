@@ -1,36 +1,48 @@
 import { PaintOptions } from "../Paint";
+import { namespace } from "./uuid";
 
-export function createStyles(
-	className: string,
-	namespace: string,
-	options: PaintOptions
-) {
+export function createBaseStyles(className: string, namespace: string) {
 	const sheetId = namespace + "base-styles";
+	const styleSheet = createStyleElement(sheetId);
 
-	const exists = document.getElementById(sheetId);
-	if (exists && exists instanceof HTMLStyleElement) return exists.sheet;
+	const next = () => styleSheet.sheet!.cssRules.length;
+
+	replaceRule(styleSheet.sheet!, `.${className} { display: grid; }`, 0);
+	replaceRule(styleSheet.sheet!, `.${className} { overflow: hidden; }`, next());
+
+	replaceRule(styleSheet.sheet!, `.${className} > canvas { grid-area: 1 / 1; }`, next()); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `.${className} > canvas[class*="ui"] { z-index: 80 }`, next()); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `.${className} > canvas[class*="temp"] { z-index: 60 }`, next()); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `.${className} > canvas[class*="artboard"] { z-index: 40 }`, next()); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `.${className} > canvas[class*="grid"] { z-index: 20 }`, next()); // prettier-ignore
+
+	return styleSheet.sheet;
+}
+
+export function createInstanceStyles(
+	id: string,
+	options: PaintOptions | { bgColor: string; width: number; height: number }
+) {
+	const styleSheet = createStyleElement(id);
+
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { background: ${options.bgColor}; }`, 0); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { max-width: ${options.width}px; max-height: ${options.height}px; }`, 1); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id=${id}] { aspect-ratio: ${options.width} / ${options.height}; }`, 2); // prettier-ignore
+
+	return styleSheet.sheet;
+}
+
+export function createStyleElement(id: string) {
+	const exists = document.getElementById(id);
+	if (exists && exists instanceof HTMLStyleElement) return exists;
 
 	const styleSheet = document.createElement("style");
-	styleSheet.id = sheetId;
+	styleSheet.id = id;
 
 	const target = document.styleSheets[0]?.ownerNode;
 	document.head.insertBefore(styleSheet, target);
 
-	styleSheet.sheet!.insertRule(`.${className} { display: grid; }`, 0); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} { overflow: hidden; }`, 1); // prettier-ignore
-
-	// ⚠️ TODO: these three rules should only apply to the Paint *instance*! that way you can have multiple Paints on a page
-	styleSheet.sheet!.insertRule(`.${className} { background: ${options.bgColor}; }`, 2); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} { max-width: ${options.width}px; max-height: ${options.height}px; }`, 3); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} { aspect-ratio: ${options.width} / ${options.height}; }`, 4); // prettier-ignore
-
-	styleSheet.sheet!.insertRule(`.${className} > canvas { grid-area: 1 / 1; }`, 5); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} > canvas[class*="ui"] { z-index: 80 }`, 6); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} > canvas[class*="temp"] { z-index: 60 }`, 7); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} > canvas[class*="artboard"] { z-index: 40 }`, 8); // prettier-ignore
-	styleSheet.sheet!.insertRule(`.${className} > canvas[class*="grid"] { z-index: 20 }`, 9); // prettier-ignore
-
-	return styleSheet.sheet;
+	return styleSheet;
 }
 
 export function replaceRule(
@@ -38,6 +50,6 @@ export function replaceRule(
 	newRule: string,
 	index: number
 ) {
-	sheet.deleteRule(index);
+	if (sheet.cssRules.item(index)) sheet.deleteRule(index);
 	sheet.insertRule(newRule, index);
 }
