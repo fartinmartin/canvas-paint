@@ -60,7 +60,7 @@ export class Paint {
 			if (brush.isDrawing && brush.mode !== "fill") {
 				this.points.push(scalePoint(brush.point, this.scale));
 				this.temp.draw(this.path);
-				this.events.dispatch("draw", () => {});
+				this.events.dispatch("draw", brush);
 			}
 		});
 
@@ -69,20 +69,20 @@ export class Paint {
 			if (brush.isDrawing) {
 				this.points.push(scalePoint(brush.point, this.scale));
 				this.temp.draw(this.path);
-				this.events.dispatch("start", () => {});
+				this.events.dispatch("start", brush);
 			}
 		});
 
 		// when brush releases, commit path to artboard and histroy
 		this.brush.events.on("up", (brush: BrushPayload) => {
 			newPath.call(this);
-			this.events.dispatch("end", () => {});
+			this.events.dispatch("end", brush);
 		});
 
 		// when brush leaves, if we're drawing commit path to artboard and histroy
 		this.brush.events.on("leave", (brush: BrushPayload) => {
 			if (brush.isDrawing) newPath.call(this);
-			this.events.dispatch("leave", () => {}); // this.ui.clear();
+			this.events.dispatch("leave", brush); // this.ui.clear();
 		});
 
 		function newPath(this: Paint) {

@@ -2,6 +2,7 @@ import { Coordinates, LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
 import { EventEmitter } from "./Events";
 import { Point } from "./Point";
+import { getInputCoords } from "../utils/input";
 
 export type Mode = "draw" | "erase" | "fill";
 export type Cap = "butt" | "round" | "square";
@@ -51,10 +52,15 @@ export class Brush {
 		this._join = options.brush?.join ?? "round";
 		this._tolerance = options.brush?.tolerance ?? 30;
 
-		this.root.addEventListener("mousemove", (e) => this.handleMove(e.offsetX, e.offsetY)); // prettier-ignore
+		this.root.addEventListener("mousemove", (e) => this.handleMove(e));
 		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
 		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
 		this.root.addEventListener("mouseleave", (e) => this.handleLeave(e));
+
+		this.root.addEventListener("touchmove", (e) => this.handleMove(e));
+		this.root.addEventListener("touchstart", (e) => this.handleDown(e));
+		this.root.addEventListener("touchend", (e) => this.handleUp(e));
+		this.root.addEventListener("touchcancel", (e) => this.handleLeave(e));
 	}
 
 	get isDrawing() {
@@ -140,24 +146,28 @@ export class Brush {
 		};
 	}
 
-	private handleMove(x: number, y: number) {
-		this._lazy.update({ x, y });
+	private handleMove(event: MouseEvent | TouchEvent) {
+		event.preventDefault(); // don't scroll on iOS
+		const coords = getInputCoords(event, this.root);
+		this._lazy.update(coords);
 		this.events.dispatch("move", this.payload);
 	}
 
-	private handleDown(event: MouseEvent) {
+	private handleDown(event: MouseEvent | TouchEvent) {
 		event.preventDefault();
+		const coords = getInputCoords(event, this.root);
+		this._lazy.update(coords);
 		this._isDrawing = true;
 		this.events.dispatch("down", this.payload);
 	}
 
-	private handleUp(event: MouseEvent) {
+	private handleUp(event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
 		this.events.dispatch("up", this.payload);
 	}
 
-	private handleLeave(event: MouseEvent) {
+	private handleLeave(event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this.events.dispatch("leave", this.payload);
 		this._isDrawing = false;
