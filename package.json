@@ -17,8 +17,9 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build && npm run types",
-		"demo": "vite build --config vite.demo.js",
 		"preview": "vite preview",
+		"build:demo": "vite build --config vite.demo.js",
+		"preview:demo": "vite preview --config vite.demo.js",
 		"types": "npx tsc --noEmit false --declaration --emitDeclarationOnly --declarationDir dist/types"
 	},
 	"devDependencies": {

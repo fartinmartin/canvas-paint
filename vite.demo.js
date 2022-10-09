@@ -1,7 +1,7 @@
-import { resolve } from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+	base: `/canvas-paint/`,
 	build: {
 		outDir: "demo",
 	},
