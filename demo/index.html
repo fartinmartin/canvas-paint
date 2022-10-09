@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="/style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>canvas-paint ⬝ demo</title>
+		<script type="module" crossorigin src="/assets/index.1580cac8.js"></script>
 	</head>
 	<body>
 		<header>
@@ -68,28 +69,7 @@
 			</section>
 		</main>
 
-		<script type="module">
-			import { Paint } from "./src/index.ts";
-
-			const root = document.getElementById("app");
-
-			const demo = new Paint(root, {
-				width: 400,
-				height: 400,
-				bgColor: "#ffffff", // "whitesmoke",
-			});
-
-			// @ts-ignore ⚠️ don't do this in production :)
-			window.demo = demo;
-
-			demo.events.on("resizing", () => console.log("resizing"));
-			demo.events.on("resized", () => console.log("resized"));
-
-			demo.events.on("start", () => console.log("start"));
-			demo.events.on("draw", () => console.log("draw"));
-			demo.events.on("end", () => console.log("end"));
-			demo.events.on("leave", () => console.log("leave"));
-		</script>
+		
 
 		<script>
 			window.addEventListener("load", () => {

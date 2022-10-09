@@ -11,9 +11,9 @@ export default defineConfig({
 		},
 		// https://vitejs.dev/guide/build.html#multi-page-app
 		// rollupOptions: {
-		// 	input: {
-		// 		main: resolve(__dirname, "index.html"),
-		// 		nested: resolve(__dirname, "examples/basic.html"),
+		// 	input: "index.hmtl",
+		// 	output: {
+		// 		dir: "./demo",
 		// 	},
 		// },
 	},

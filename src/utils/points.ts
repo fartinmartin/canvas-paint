@@ -10,7 +10,7 @@ export function getMidCoords(p1: Coordinates, p2: Coordinates) {
 }
 
 export function scalePath(path: Path, scaleTo: number) {
-	let p = JSON.parse(JSON.stringify(path)); // can we do w/o this?
+	let p = JSON.parse(JSON.stringify(path)) as Path; // can we do w/o this?
 	const drawnAt = path.scale;
 	const factor = drawnAt / scaleTo;
 
@@ -22,6 +22,23 @@ export function scalePath(path: Path, scaleTo: number) {
 	}));
 
 	return p as Path;
+}
+
+export function simplifyPath(path: Path, tolerance: number) {
+	let p = JSON.parse(JSON.stringify(path)) as Path; // can we do w/o this?
+	p.points = simplifyPoints(path.points, tolerance);
+	return p as Path;
+}
+
+export function simplifyPoints(points: Point[], tolerance: number) {
+	points = removeConsecutiveDupes(points);
+	return points.filter((_, index) => (index + 1) % tolerance);
+}
+
+export function removeConsecutiveDupes(array: any[]) {
+	return array.filter((item, pos, arr) => {
+		return pos === 0 || JSON.stringify(item) !== JSON.stringify(arr[pos - 1]);
+	});
 }
 
 export function scalePoint(point: Point, scaleTo: number) {

@@ -13,7 +13,7 @@ import { Point } from "./classes/Point";
 import { namespace, uuid } from "./utils/uuid";
 import { createBaseStyles, createInstanceStyles } from "./utils/styles";
 import { resizeObserver } from "./utils/resize";
-import { scalePoint } from "./utils/points";
+import { scalePoint, simplifyPoints } from "./utils/points";
 
 export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOptions; // prettier-ignore
 
@@ -84,8 +84,10 @@ export class Paint {
 
 		// when brush leaves, if we're drawing commit path to artboard and histroy
 		this.brush.events.on("leave", (brush: BrushPayload) => {
-			if (brush.isDrawing) newPath.call(this);
-			this.events.dispatch("leave", brush); // this.ui.clear();
+			if (brush.isDrawing) {
+				newPath.call(this);
+				this.events.dispatch("leave", brush);
+			}
 		});
 
 		function newPath(this: Paint) {
@@ -124,7 +126,8 @@ export class Paint {
 
 	get path() {
 		const { mode, cap, join, tolerance } = this.brush;
-		return new Path(this.points, mode, this.scale, cap, join, tolerance);
+		const points = simplifyPoints(this.points, 2);
+		return new Path(points, mode, this.scale, cap, join, tolerance);
 	}
 
 	undo() {
