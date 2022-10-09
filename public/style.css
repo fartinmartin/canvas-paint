@@ -45,7 +45,7 @@ button:hover {
 
 header {
 	height: var(--header-height);
-	border-bottom: 1px solid slategray;
+	border-bottom: 1px solid lightgray;
 	padding: 1rem;
 }
 
@@ -66,7 +66,7 @@ aside {
 
 	padding: 1rem;
 	padding-bottom: var(--header-height);
-	border-right: 1px dashed slategray;
+	border-right: 1px dashed lightgray;
 
 	flex-shrink: 0;
 	max-width: 15ch;
