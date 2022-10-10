@@ -41,6 +41,9 @@ export class Paint {
 
 		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
 
+		// the CanvasOptions portion of this.options needs to be "processed" (?) instead of being referenced/passed directly?
+		// i.e. if we want to change the dimensions or the background color post initalization, how would we do that?
+
 		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
 		this.brush = new Brush(root, options);
 
@@ -164,6 +167,24 @@ export class Paint {
 			paths: this.history.state,
 			version: APP_VERSION, // see `./vite.config.js` and `./src/vite-env.d.ts`: true,
 		};
+	}
+
+	async toBlob(type?: string | undefined, quality?: number) {
+		const canvas = document.createElement("canvas");
+		const context = canvas.getContext("2d")!;
+
+		canvas.width = this.artboard.canvas.width / devicePixelRatio;
+		canvas.height = this.artboard.canvas.height / devicePixelRatio;
+
+		const { width, height } = canvas;
+		context.fillStyle = this.options.bgColor ?? "transparent";
+		context.fillRect(0, 0, width, height);
+		// context.imageSmoothingEnabled = false;
+		context.drawImage(this.artboard.canvas, 0, 0, width, height);
+
+		return await new Promise<Blob | null>((resolve) =>
+			canvas.toBlob(resolve, type, quality)
+		);
 	}
 
 	async load(

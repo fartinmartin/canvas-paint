@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="./style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>canvas-paint ⬝ demo</title>
-		<script type="module" crossorigin src="./assets/index.1580cac8.js"></script>
+		<script type="module" crossorigin src="./assets/index.ddde589c.js"></script>
 	</head>
 	<body>
 		<header>
@@ -47,7 +47,7 @@
 						<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
 						<!-- prettier-ignore -->
 						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
-						<button onclick="png">png</button>
+						<button onclick="downloadImage()">png</button>
 						<button onclick="demo.drawHistory(10)">draw</button>
 					</div>
 					<div class="drawing">
@@ -77,15 +77,29 @@
 				const bg = document.querySelectorAll("input[type='color']")[1];
 				brush.value = demo.brush.color;
 				bg.value = demo.options.bgColor; // not guarenteed to be a hex value
+
 				const width = document.querySelectorAll("input[type='number']")[0];
 				const height = document.querySelectorAll("input[type='number']")[1];
 				width.value = demo.options.width;
 				height.value = demo.options.height;
 			});
+
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
 			const updateBgColor = (target) => (demo.options.bgColor = target.value);
+
 			const updateWidth = (target) => (demo.options.width = target.value);
 			const updateHeight = (target) => (demo.options.height = target.value);
+
+			async function downloadImage() {
+				const blob = await demo.toBlob();
+
+				const downloadLink = document.createElement("a");
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.download = "canvas-paint.png";
+				downloadLink.click();
+
+				downloadLink.remove();
+			}
 		</script>
 
 		<script>
