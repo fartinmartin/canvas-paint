@@ -10,6 +10,9 @@ import { sleep } from "radash";
 import FloodFill from "q-floodfill";
 import { colorToRGBA, isSameColor, createOutlineCanvas } from "../utils/fill";
 
+// https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
+// https://www.macarthur.me/posts/animate-canvas-in-a-worker
+
 export class CanvasDraw extends Canvas {
 	constructor(
 		public root: HTMLElement,
