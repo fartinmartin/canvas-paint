@@ -1,5 +1,5 @@
 import ResizeObserver from "resize-observer-polyfill";
-import { debounce } from "lodash-es";
+import { debounce } from "radash";
 
 export function resizeObserver(
 	el: HTMLElement,
@@ -9,13 +9,13 @@ export function resizeObserver(
 	let { width: prevWidth, height: prevHeight } = el.getBoundingClientRect();
 
 	const observer = new ResizeObserver(
-		debounce(([entry]) => {
+		debounce({ delay }, ([entry]) => {
 			const { width, height } = entry.target.getBoundingClientRect();
 			// prevent infinite resize loops if canvas CSS dimensions are not explicitely set
 			if (~~width !== ~~prevWidth || ~~height !== ~~prevHeight) {
 				callback(entry), (prevWidth = width), (prevHeight = height);
 			}
-		}, delay)
+		})
 	);
 
 	observer.observe(el);

@@ -5,7 +5,7 @@ import { Point } from "../classes/Point";
 
 import { getMidCoords, scalePath } from "../utils/points";
 import { namespace } from "../utils/uuid";
-import { waitFor } from "../utils/waitFor";
+import { sleep } from "radash";
 
 import FloodFill from "q-floodfill";
 import { colorToRGBA, isSameColor, createOutlineCanvas } from "../utils/fill";
@@ -20,6 +20,7 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
+	// @ts-ignore
 	async draw(p: Path, delay?: number) {
 		const path = scalePath(p, this.scale); // scale here so that drawings are scaled whilst drawing, but also whislt playing back history
 
@@ -32,10 +33,10 @@ export class CanvasDraw extends Canvas {
 				const slice = JSON.parse(JSON.stringify(path)); // can we do w/o this? or in a more efficient way?
 				slice.points = slice.points.slice(0, i + 1);
 				path.mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
-				await waitFor(delay);
+				await sleep(delay);
 			}
 
-			return waitFor(delay); // return a promise in order to pause between paths
+			return sleep(delay); // return a promise in order to pause between paths
 		}
 	}
 
