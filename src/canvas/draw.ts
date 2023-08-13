@@ -1,7 +1,7 @@
-import { Canvas, CanvasOptions } from "./Canvas";
-import { Brush } from "../classes/Brush";
-import { Path } from "../classes/Path";
-import { Point } from "../classes/Point";
+import { Canvas, CanvasOptions } from "./canvas";
+import { Brush } from "../classes/brush";
+import { Path } from "../classes/path";
+import { Point } from "../classes/point";
 
 import { getMidCoords, scalePath } from "../utils/points";
 import { namespace } from "../utils/uuid";

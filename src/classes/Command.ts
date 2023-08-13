@@ -1,5 +1,5 @@
-import { Path } from "./Path";
-import { Point } from "./Point";
+import { Path } from "./path";
+import { Point } from "./point";
 
 export class CommandStack {
 	private _stack: string[] = [];

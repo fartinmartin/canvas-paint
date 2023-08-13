@@ -1,14 +1,14 @@
-import { UI, UIOptions } from "./canvas/UI";
-import { Temp } from "./canvas/Temp";
-import { Artboard } from "./canvas/Artboard";
-import { Grid, GridOptions } from "./canvas/Grid";
-import { CanvasOptions } from "./canvas/Canvas";
+import { UI, UIOptions } from "./canvas/ui";
+import { Temp } from "./canvas/temp";
+import { Artboard } from "./canvas/artboard";
+import { Grid, GridOptions } from "./canvas/grid";
+import { CanvasOptions } from "./canvas/canvas";
 
-import { Brush, BrushPayload, BrushOptions } from "./classes/Brush";
-import { AddClear, AddPath, CommandStack } from "./classes/Command";
-import { EventEmitter } from "./classes/Events";
-import { Path } from "./classes/Path";
-import { Point } from "./classes/Point";
+import { Brush, BrushPayload, BrushOptions } from "./classes/brush";
+import { AddClear, AddPath, CommandStack } from "./classes/command";
+import { EventEmitter } from "./classes/events";
+import { Path } from "./classes/path";
+import { Point } from "./classes/point";
 
 import { namespace, uuid } from "./utils/uuid";
 import { createBaseStyles, createInstanceStyles } from "./utils/styles";

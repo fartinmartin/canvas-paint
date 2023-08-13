@@ -1,6 +1,6 @@
 import { Coordinates } from "lazy-brush";
-import { Path } from "../classes/Path";
-import { Point } from "../classes/Point";
+import { Path } from "../classes/path";
+import { Point } from "../classes/point";
 
 export function getMidCoords(p1: Coordinates, p2: Coordinates) {
 	return {

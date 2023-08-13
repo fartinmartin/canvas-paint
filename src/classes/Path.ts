@@ -1,5 +1,5 @@
-import { Cap, Mode, Join } from "./Brush";
-import { Point } from "./Point";
+import { Cap, Mode, Join } from "./brush";
+import { Point } from "./point";
 
 export class Path {
 	constructor(

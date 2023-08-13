@@ -1,8 +1,8 @@
 // @ts-ignore
 import { Catenary } from "catenary-curve";
-import { PaintOptions } from "../Paint";
-import { Canvas } from "./Canvas";
-import { Brush } from "../classes/Brush";
+import { PaintOptions } from "../paint";
+import { Canvas } from "./canvas";
+import { Brush } from "../classes/brush";
 
 export type UIOptions = {
 	ui?: {

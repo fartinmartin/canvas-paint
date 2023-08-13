@@ -1,1 +1,1 @@
-export { Paint } from "./Paint";
+export { Paint } from "./paint";

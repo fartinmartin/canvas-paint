@@ -1,4 +1,4 @@
-import { Canvas, CanvasOptions } from "./Canvas";
+import { Canvas, CanvasOptions } from "./canvas";
 
 export type GridOptions = {};
 

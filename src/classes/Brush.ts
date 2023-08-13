@@ -1,7 +1,7 @@
 import { Coordinates, LazyBrush } from "lazy-brush"; // @ts-ignore
 import { Catenary } from "catenary-curve";
-import { EventEmitter } from "./Events";
-import { Point } from "./Point";
+import { EventEmitter } from "./events";
+import { Point } from "./point";
 import { getInputCoords } from "../utils/input";
 
 export type Mode = "draw" | "erase" | "fill";
