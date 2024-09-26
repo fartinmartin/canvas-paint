@@ -102,6 +102,7 @@ export class Paint {
 	}
 
 	removeListeners() {
+		this.brush.removeAllListeners();
 		this.brush.events.removeAllListeners();
 		this.events.removeAllListeners();
 	}

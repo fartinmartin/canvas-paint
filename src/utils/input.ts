@@ -20,8 +20,8 @@ export function getInputCoords(
 
 	// need to consider scrolled positions
 	const elRect = {
-		left: elBCRect.left + window.pageXOffset,
-		top: elBCRect.top + window.pageYOffset,
+		left: elBCRect.left + window.scrollX,
+		top: elBCRect.top + window.scrollY,
 	};
 
 	return {

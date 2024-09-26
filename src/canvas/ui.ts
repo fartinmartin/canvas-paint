@@ -52,7 +52,7 @@ export class UI extends Canvas {
 		const c = Math.PI * 2;
 
 		// Draw brush point
-		if (ui?.brush === true ?? true) {
+		if (ui?.brush ?? true) {
 			this.context.beginPath();
 			this.context.fillStyle = this.brush.color;
 			const radius = this.brush.size * this.scale;

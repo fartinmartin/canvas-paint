@@ -25,6 +25,14 @@ export type BrushOptions = {
 	};
 };
 
+type InputEventKeys = keyof {
+	[K in keyof HTMLElementEventMap as HTMLElementEventMap[K] extends
+		| MouseEvent
+		| TouchEvent
+		? K
+		: never]: HTMLElementEventMap[K];
+};
+
 export class Brush {
 	public events = new EventEmitter();
 	private _isDrawing = false;
@@ -37,6 +45,10 @@ export class Brush {
 	private _tolerance: number;
 
 	private _lazy: LazyBrush;
+	private _listeners: {
+		event: InputEventKeys;
+		handler: (event: MouseEvent | TouchEvent) => void;
+	}[] = [];
 
 	constructor(private root: HTMLElement, options: BrushOptions) {
 		this._lazy = new LazyBrush({
@@ -52,15 +64,30 @@ export class Brush {
 		this._join = options.brush?.join ?? "round";
 		this._tolerance = options.brush?.tolerance ?? 30;
 
-		this.root.addEventListener("mousemove", (e) => this.handleMove(e));
-		this.root.addEventListener("mousedown", (e) => this.handleDown(e));
-		this.root.addEventListener("mouseup", (e) => this.handleUp(e));
-		this.root.addEventListener("mouseleave", (e) => this.handleLeave(e));
+		this._listeners = [
+			{ event: "mousedown", handler: this.handleDown },
+			{ event: "touchstart", handler: this.handleDown },
+			//
+			{ event: "mouseup", handler: this.handleUp },
+			{ event: "touchend", handler: this.handleUp },
+			//
+			{ event: "mousemove", handler: this.handleMove },
+			{ event: "touchmove", handler: this.handleMove },
+			//
+			// TODO: consider window events, in order to let drawing continue past canvas el (perhaps with a limit of lazy.radius?)
+			{ event: "mouseleave", handler: this.handleLeave },
+			{ event: "touchcancel", handler: this.handleLeave },
+		];
 
-		this.root.addEventListener("touchmove", (e) => this.handleMove(e));
-		this.root.addEventListener("touchstart", (e) => this.handleDown(e));
-		this.root.addEventListener("touchend", (e) => this.handleUp(e));
-		this.root.addEventListener("touchcancel", (e) => this.handleLeave(e));
+		this._listeners.forEach(({ event, handler }) =>
+			this.root.addEventListener(event, handler)
+		);
+	}
+
+	removeAllListeners() {
+		this._listeners.forEach(({ event, handler }) =>
+			this.root.removeEventListener(event, handler)
+		);
 	}
 
 	get isDrawing() {
@@ -169,7 +196,7 @@ export class Brush {
 
 	private handleLeave(event: MouseEvent | TouchEvent) {
 		event.preventDefault();
-		this.events.dispatch("leave", this.payload);
 		this._isDrawing = false;
+		this.events.dispatch("leave", this.payload);
 	}
 }
