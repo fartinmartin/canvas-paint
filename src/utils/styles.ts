@@ -1,4 +1,4 @@
-import { PaintOptions } from "../paint";
+import { PaintOptions } from "..";
 import { namespace } from "./uuid";
 
 export function createBaseStyles(className: string, namespace: string) {

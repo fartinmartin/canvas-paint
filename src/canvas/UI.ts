@@ -1,6 +1,5 @@
-// @ts-ignore
-import { Catenary } from "catenary-curve";
-import { PaintOptions } from "../paint";
+import { getCatenaryCurve, drawResult } from "catenary-curve";
+import { PaintOptions } from "..";
 import { Canvas } from "./canvas";
 import { Brush } from "../classes/brush";
 
@@ -25,8 +24,6 @@ export type UIOptions = {
 };
 
 export class UI extends Canvas {
-	private catenary = new Catenary();
-
 	constructor(
 		public root: HTMLElement,
 		private brush: Brush,
@@ -86,8 +83,9 @@ export class UI extends Canvas {
 			this.context.setLineDash(ui?.chain?.dash ?? [2, 4]);
 			this.context.strokeStyle = ui?.chain?.color ?? "#000000";
 
-			const radius = this.brush.lazy.radius / 2;
-			this.catenary.drawToCanvas(this.context, brush, pointer, radius);
+			const radius = this.brush.lazy.radius;
+			const cantenary = getCatenaryCurve(pointer, brush, radius);
+			drawResult(cantenary, this.context);
 
 			this.context.stroke();
 		}
