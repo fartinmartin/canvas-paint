@@ -2,7 +2,7 @@ import { UI, UIOptions } from "./canvas/ui";
 import { Temp } from "./canvas/temp";
 import { Artboard } from "./canvas/artboard";
 import { Grid, GridOptions } from "./canvas/grid";
-import { CanvasOptions } from "./canvas/canvas";
+import { CanvasOptions } from "./classes/canvas";
 
 import { Brush, BrushPayload, BrushOptions } from "./classes/brush";
 import { AddClear, AddPath, CommandStack } from "./classes/command";
@@ -166,26 +166,8 @@ export class Paint {
 			height: this.options.height,
 			bgColor: this.options.bgColor,
 			paths: this.history.state,
-			version: APP_VERSION, // see `./vite.config.js` and `./src/vite-env.d.ts`: true,
+			version: APP_VERSION,
 		};
-	}
-
-	async toBlob(type?: string | undefined, quality?: number) {
-		const canvas = document.createElement("canvas");
-		const context = canvas.getContext("2d")!;
-
-		canvas.width = this.artboard.canvas.width / devicePixelRatio;
-		canvas.height = this.artboard.canvas.height / devicePixelRatio;
-
-		const { width, height } = canvas;
-		context.fillStyle = this.options.bgColor ?? "transparent";
-		context.fillRect(0, 0, width, height);
-		// context.imageSmoothingEnabled = false;
-		context.drawImage(this.artboard.canvas, 0, 0, width, height);
-
-		return await new Promise<Blob | null>((resolve) =>
-			canvas.toBlob(resolve, type, quality)
-		);
 	}
 
 	async load(
@@ -226,5 +208,23 @@ export class Paint {
 			for (const path of this.history.state) await this.artboard.draw(path);
 		}
 		this.events.dispatch("drawn", () => {});
+	}
+
+	async toBlob(type?: string | undefined, quality?: number) {
+		const canvas = document.createElement("canvas");
+		const context = canvas.getContext("2d")!;
+
+		canvas.width = this.artboard.canvas.width / devicePixelRatio;
+		canvas.height = this.artboard.canvas.height / devicePixelRatio;
+
+		const { width, height } = canvas;
+		context.fillStyle = this.options.bgColor ?? "transparent";
+		context.fillRect(0, 0, width, height);
+		// context.imageSmoothingEnabled = false;
+		context.drawImage(this.artboard.canvas, 0, 0, width, height);
+
+		return await new Promise<Blob | null>((resolve) =>
+			canvas.toBlob(resolve, type, quality)
+		);
 	}
 }

@@ -1,6 +1,6 @@
 import { getCatenaryCurve, drawResult } from "catenary-curve";
 import { PaintOptions } from "..";
-import { Canvas } from "./canvas";
+import { Canvas } from "../classes/canvas";
 import { Brush } from "../classes/brush";
 
 export type UIOptions = {

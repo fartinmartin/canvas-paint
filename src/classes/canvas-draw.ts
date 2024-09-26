@@ -1,7 +1,7 @@
 import { Canvas, CanvasOptions } from "./canvas";
-import { Brush } from "../classes/brush";
-import { Path } from "../classes/path";
-import { Point } from "../classes/point";
+import { Brush } from "./brush";
+import { Path } from "./path";
+import { Point } from "./point";
 
 import { getMidCoords, scalePath } from "../utils/points";
 import { namespace } from "../utils/uuid";
@@ -23,23 +23,21 @@ export class CanvasDraw extends Canvas {
 		super(root, className, options);
 	}
 
-	// @ts-ignore
 	async draw(p: Path, delay?: number) {
 		const path = scalePath(p, this.scale); // scale here so that drawings are scaled whilst drawing, but also whislt playing back history
-
 		if (path.mode === "clear") return this.clear();
 
+		const drawAction = (mode: string, slice: Path) =>
+			mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
+
 		if (!delay) {
-			path.mode !== "fill" ? this.drawPath(path) : this.drawFill(path); // await this.drawFill()?
+			drawAction(path.mode, path);
 		} else {
 			for (let i = 0; i < path.points.length; i++) {
-				const slice = JSON.parse(JSON.stringify(path)); // can we do w/o this? or in a more efficient way?
-				slice.points = slice.points.slice(0, i + 1);
-				path.mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
+				const slice = { ...path, points: path.points.slice(0, i + 1) };
+				await drawAction(slice.mode, slice);
 				await sleep(delay);
 			}
-
-			return sleep(delay); // return a promise in order to pause between paths
 		}
 	}
 

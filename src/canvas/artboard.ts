@@ -1,6 +1,6 @@
 import { Brush } from "../classes/brush";
-import { CanvasDraw } from "./draw";
-import { CanvasOptions } from "./canvas";
+import { CanvasDraw } from "../classes/canvas-draw";
+import { CanvasOptions } from "../classes/canvas";
 
 export class Artboard extends CanvasDraw {
 	constructor(public root: HTMLElement, brush: Brush, options: CanvasOptions) {
