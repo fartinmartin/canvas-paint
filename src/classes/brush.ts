@@ -80,13 +80,13 @@ export class Brush {
 		];
 
 		this._listeners.forEach(({ event, handler }) =>
-			this.root.addEventListener(event, handler)
+			this.root.addEventListener(event, handler.bind(this))
 		);
 	}
 
 	removeAllListeners() {
 		this._listeners.forEach(({ event, handler }) =>
-			this.root.removeEventListener(event, handler)
+			this.root.removeEventListener(event, handler.bind(this))
 		);
 	}
 
@@ -173,14 +173,14 @@ export class Brush {
 		};
 	}
 
-	private handleMove(event: MouseEvent | TouchEvent) {
+	private handleMove(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // don't scroll on iOS
 		const coords = getInputCoords(event, this.root);
 		this._lazy.update(coords);
 		this.events.dispatch("move", this.payload);
 	}
 
-	private handleDown(event: MouseEvent | TouchEvent) {
+	private handleDown(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		const coords = getInputCoords(event, this.root);
 		this._lazy.update(coords);
@@ -188,13 +188,13 @@ export class Brush {
 		this.events.dispatch("down", this.payload);
 	}
 
-	private handleUp(event: MouseEvent | TouchEvent) {
+	private handleUp(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
 		this.events.dispatch("up", this.payload);
 	}
 
-	private handleLeave(event: MouseEvent | TouchEvent) {
+	private handleLeave(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
 		this.events.dispatch("leave", this.payload);
