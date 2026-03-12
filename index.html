@@ -16,41 +16,41 @@
 			<aside>
 				<div id="controls">
 					<div class="history">
-						<button onclick="demo.undo()">undo</button>
-						<button onclick="demo.redo()">redo</button>
+						<button onclick="demo.undo()" title="undo"><svg class="remix"><use href="/remixicon.symbol.svg#ri-arrow-go-back-line"></use></svg></button>
+						<button onclick="demo.redo()" title="redo"><svg class="remix"><use href="/remixicon.symbol.svg#ri-arrow-go-forward-line"></use></svg></button>
 					</div>
 					<div class="mode">
-						<button onclick="demo.brush.mode = `draw`">draw</button>
-						<button onclick="demo.brush.mode = `erase`">erase</button>
-						<button onclick="demo.brush.mode = `fill`">fill</button>
+						<button onclick="demo.brush.mode = `draw`" title="draw"><svg class="remix"><use href="/remixicon.symbol.svg#ri-pencil-line"></use></svg></button>
+						<button onclick="demo.brush.mode = `erase`" title="erase"><svg class="remix"><use href="/remixicon.symbol.svg#ri-eraser-line"></use></svg></button>
+						<button onclick="demo.brush.mode = `fill`" title="fill"><svg class="remix"><use href="/remixicon.symbol.svg#ri-paint-fill"></use></svg></button>
 					</div>
 					<div class="brush">
-						<button onclick="demo.brush.size--">brush-</button>
-						<button onclick="demo.brush.size++">brush+</button>
+						<button onclick="demo.brush.size--" title="brush size -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+						<button onclick="demo.brush.size++" title="brush size +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 						<input onchange="updateBrushColor(this)" type="color" />
 					</div>
 					<div class="radius">
-						<button onclick="demo.brush.radius--">radius-</button>
-						<button onclick="demo.brush.radius++">radius+</button>
-						<button onclick="demo.brush.lerpFactor -= 0.5">lerp-</button>
-						<button onclick="demo.brush.lerpFactor += 0.5">lerp+</button>
+						<button onclick="demo.brush.radius--" title="radius -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-radio-button-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+						<button onclick="demo.brush.radius++" title="radius +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-radio-button-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						<button onclick="demo.brush.lerpFactor -= 0.5" title="lerp factor -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-speed-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+						<button onclick="demo.brush.lerpFactor += 0.5" title="lerp factor +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-speed-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 					</div>
 					<div class="tolerance">
-						<button onclick="demo.brush.tolerance--">tolerance-</button>
-						<button onclick="demo.brush.tolerance++">tolerance+</button>
+						<button onclick="demo.brush.tolerance--" title="tolerance -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-contrast-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+						<button onclick="demo.brush.tolerance++" title="tolerance +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-contrast-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 					</div>
 					<div class="remove">
-						<button onclick="demo.clear()">clear</button>
-						<button onclick="demo.destroy()">destroy</button>
+						<button onclick="demo.clear()" title="clear"><svg class="remix"><use href="/remixicon.symbol.svg#ri-delete-bin-line"></use></svg></button>
+						<button onclick="demo.destroy()" title="destroy"><svg class="remix"><use href="/remixicon.symbol.svg#ri-close-circle-line"></use></svg></button>
 					</div>
 					<div class="io">
 						<!-- prettier-ignore -->
-						<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
+						<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))" title="save"><svg class="remix"><use href="/remixicon.symbol.svg#ri-save-line"></use></svg></button>
 						<!-- prettier-ignore -->
-						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
-						<button onclick="downloadImage()">png</button>
-						<button onclick="downloadVideo()">webm</button>
-						<button onclick="demo.drawHistory({ delay: 10 })">draw</button>
+						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))" title="load"><svg class="remix"><use href="/remixicon.symbol.svg#ri-folder-open-line"></use></svg></button>
+						<button onclick="downloadImage()" title="download png"><svg class="remix"><use href="/remixicon.symbol.svg#ri-image-line"></use></svg></button>
+						<button onclick="downloadVideo()" title="download webm"><svg class="remix"><use href="/remixicon.symbol.svg#ri-video-download-line"></use></svg></button>
+						<button onclick="demo.drawHistory({ delay: 10 })" title="playback"><svg class="remix"><use href="/remixicon.symbol.svg#ri-play-line"></use></svg></button>
 					</div>
 					<div class="drawing">
 						<input onchange="updateBgColor(this)" type="color" />
@@ -58,10 +58,10 @@
 						<input onchange="updateHeight(this)" type="number" />
 					</div>
 					<div class="ui">
-						<button onclick="png">point</button>
-						<button onclick="png">brush</button>
-						<button onclick="png">center</button>
-						<button onclick="png">chain</button>
+						<button onclick="png" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
+						<button onclick="png" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg></button>
+						<button onclick="png" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
+						<button onclick="png" title="toggle chain"><svg class="remix"><use href="/remixicon.symbol.svg#ri-links-line"></use></svg></button>
 					</div>
 				</div>
 			</aside>

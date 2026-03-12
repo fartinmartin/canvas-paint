@@ -131,3 +131,11 @@ section {
 	flex-direction: column;
 	margin-bottom: 0.5rem;
 }
+
+.remix {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+	vertical-align: middle;
+	pointer-events: none;
+}
