@@ -126,11 +126,13 @@ export class Paint {
 	}
 
 	get aspectRatio() {
-		return this.options.width / this.options.height;
+		const margin = (this.options.margin ?? 0) * 2;
+		return (this.options.width + margin) / (this.options.height + margin);
 	}
 
 	get scale() {
-		return this.root.clientWidth / this.options.width;
+		const margin = (this.options.margin ?? 0) * 2;
+		return this.root.clientWidth / (this.options.width + margin);
 	}
 
 	get path() {
@@ -160,12 +162,25 @@ export class Paint {
 		this.points = [];
 	}
 
+	async setMargin(margin: number) {
+		this.options.margin = margin;
+
+		const totalMargin = margin * 2;
+		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
+			canvas.resize({ width: this.options.width + totalMargin, height: this.options.height + totalMargin });
+		});
+
+		createInstanceStyles(this.id, this.options);
+		await this.drawHistory();
+	}
+
 	async setSize(width: number, height: number) {
 		this.options.width = width;
 		this.options.height = height;
 
+		const margin = (this.options.margin ?? 0) * 2;
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
-			canvas.resize({ width, height });
+			canvas.resize({ width: width + margin, height: height + margin });
 		});
 
 		createInstanceStyles(this.id, this.options);
@@ -182,13 +197,14 @@ export class Paint {
 			width: this.options.width,
 			height: this.options.height,
 			bgColor: this.options.bgColor,
+			margin: this.options.margin,
 			paths: this.history.state,
 			version: APP_VERSION,
 		};
 	}
 
 	async load(
-		{ width, height, paths, bgColor }: ReturnType<typeof this.save>,
+		{ width, height, paths, bgColor, margin: savedMargin }: ReturnType<typeof this.save>,
 		options: PlaybackOptions = {}
 	) {
 		this.destroy();
@@ -196,13 +212,29 @@ export class Paint {
 		this.options.width = width;
 		this.options.height = height;
 
+		const currentMargin = this.options.margin ?? 0;
+		const marginDelta = currentMargin - (savedMargin ?? 0);
+		const totalMargin = currentMargin * 2;
+
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
-			canvas.resize({ width, height });
+			canvas.resize({ width: width + totalMargin, height: height + totalMargin });
 		});
 
-		createInstanceStyles(this.id, { width, height, bgColor });
+		createInstanceStyles(this.id, this.options);
 
-		paths.forEach((path) => {
+		const adjustedPaths = marginDelta === 0 ? paths : paths.map((path) => {
+			if (path.mode === "clear") return path;
+			return {
+				...path,
+				points: path.points.map((p) => ({
+					...p,
+					x: p.x + marginDelta * path.scale,
+					y: p.y + marginDelta * path.scale,
+				})),
+			};
+		});
+
+		adjustedPaths.forEach((path) => {
 			const c = path.mode === "clear" ? new AddClear() : new AddPath(path);
 			this.history.execute(c);
 		});
@@ -244,9 +276,18 @@ export class Paint {
 		const delay = this.resolveDelay(options) ?? 10;
 		const fps = options.fps ?? 60;
 
+		const margin = this.options.margin ?? 0;
+		const scale = this.scale;
+		const docWidth = this.options.width * scale;
+		const docHeight = this.options.height * scale;
+		const sx = margin * scale * devicePixelRatio;
+		const sy = margin * scale * devicePixelRatio;
+		const sw = docWidth * devicePixelRatio;
+		const sh = docHeight * devicePixelRatio;
+
 		const recording = document.createElement("canvas");
-		recording.width = this.artboard.canvas.width / devicePixelRatio;
-		recording.height = this.artboard.canvas.height / devicePixelRatio;
+		recording.width = docWidth;
+		recording.height = docHeight;
 		const ctx = recording.getContext("2d")!;
 		const { width, height } = recording;
 
@@ -260,8 +301,8 @@ export class Paint {
 		const composite = () => {
 			ctx.fillStyle = this.options.bgColor ?? "transparent";
 			ctx.fillRect(0, 0, width, height);
-			ctx.drawImage(this.artboard.canvas, 0, 0, width, height);
-			ctx.drawImage(this.temp.canvas, 0, 0, width, height);
+			ctx.drawImage(this.artboard.canvas, sx, sy, sw, sh, 0, 0, width, height);
+			ctx.drawImage(this.temp.canvas, sx, sy, sw, sh, 0, 0, width, height);
 			if (compositing) requestAnimationFrame(composite);
 		};
 
@@ -284,17 +325,25 @@ export class Paint {
 	}
 
 	async toBlob(type?: string | undefined, quality?: number) {
+		const margin = this.options.margin ?? 0;
+		const scale = this.scale;
+		const docWidth = this.options.width * scale;
+		const docHeight = this.options.height * scale;
+		const sx = margin * scale * devicePixelRatio;
+		const sy = margin * scale * devicePixelRatio;
+		const sw = docWidth * devicePixelRatio;
+		const sh = docHeight * devicePixelRatio;
+
 		const canvas = document.createElement("canvas");
 		const context = canvas.getContext("2d")!;
 
-		canvas.width = this.artboard.canvas.width / devicePixelRatio;
-		canvas.height = this.artboard.canvas.height / devicePixelRatio;
+		canvas.width = docWidth;
+		canvas.height = docHeight;
 
 		const { width, height } = canvas;
 		context.fillStyle = this.options.bgColor ?? "transparent";
 		context.fillRect(0, 0, width, height);
-		// context.imageSmoothingEnabled = false;
-		context.drawImage(this.artboard.canvas, 0, 0, width, height);
+		context.drawImage(this.artboard.canvas, sx, sy, sw, sh, 0, 0, width, height);
 
 		return await new Promise<Blob | null>((resolve) =>
 			canvas.toBlob(resolve, type, quality)

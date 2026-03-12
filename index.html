@@ -88,6 +88,9 @@
 						<div class="row">
 							<input onchange="updateHeight(this)" type="number" />
 						</div>
+						<div class="row">
+							<input onchange="updateMargin(this)" type="number" />
+						</div>
 					</div>
 					<div class="ui">
 						<div class="row">
@@ -165,8 +168,10 @@
 
 				const width = document.querySelectorAll("input[type='number']")[0];
 				const height = document.querySelectorAll("input[type='number']")[1];
+				const margin = document.querySelectorAll("input[type='number']")[2];
 				width.value = demo.options.width;
 				height.value = demo.options.height;
+				margin.value = demo.options.margin ?? 0;
 			});
 
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
@@ -174,6 +179,7 @@
 
 			const updateWidth = (target) => demo.setSize(Number(target.value), demo.options.height);
 			const updateHeight = (target) => demo.setSize(demo.options.width, Number(target.value));
+			const updateMargin = (target) => demo.setMargin(Number(target.value));
 
 			function toggleUI(element) {
 				const ui = demo.options.ui ??= {};
