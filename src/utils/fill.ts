@@ -1,4 +1,4 @@
-import FloodFill, { ColorRGBA, setColorAtPixel } from "q-floodfill";
+import FloodFill, { ColorRGBA } from "q-floodfill";
 import { parseToRgba } from "color2k";
 
 export function colorToRGBA(color: string): ColorRGBA {
@@ -35,6 +35,8 @@ export function dilate(floodFill: FloodFill, fillColor: string) {
 
 	const neighbors = [[0, 1], [0, -1], [1, 0], [-1, 0]];
 
+	const data = floodFill.imageData.data;
+
 	filled.forEach((key) => {
 		const [x, y] = key.split("|").map(Number);
 		for (const [dx, dy] of neighbors) {
@@ -42,7 +44,17 @@ export function dilate(floodFill: FloodFill, fillColor: string) {
 			const ny = y + dy;
 			if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
 			if (filled.has(`${nx}|${ny}`)) continue;
-			setColorAtPixel(floodFill.imageData, color, nx, ny);
+
+			// Composite fill color under the existing fringe pixel using "A over B":
+			//   result = existing * existingAlpha + fill * (1 - existingAlpha)
+			// A fully opaque stroke pixel stays as-is; a transparent pixel becomes
+			// fill color; a semi-transparent anti-aliased edge pixel blends naturally.
+			const idx = (ny * width + nx) * 4;
+			const a = data[idx + 3] / 255;
+			data[idx]     = Math.round(data[idx]     * a + color.r * (1 - a));
+			data[idx + 1] = Math.round(data[idx + 1] * a + color.g * (1 - a));
+			data[idx + 2] = Math.round(data[idx + 2] * a + color.b * (1 - a));
+			data[idx + 3] = 255;
 		}
 	});
 }
