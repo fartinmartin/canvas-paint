@@ -47,6 +47,7 @@
 						<!-- prettier-ignore -->
 						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
 						<button onclick="downloadImage()">png</button>
+						<button onclick="downloadVideo()">webm</button>
 						<button onclick="demo.drawHistory(10)">draw</button>
 					</div>
 					<div class="drawing">
@@ -116,6 +117,17 @@
 				const downloadLink = document.createElement("a");
 				downloadLink.href = window.URL.createObjectURL(blob);
 				downloadLink.download = "canvas-paint.png";
+				downloadLink.click();
+
+				downloadLink.remove();
+			}
+
+			async function downloadVideo() {
+				const blob = await demo.toVideo(10);
+
+				const downloadLink = document.createElement("a");
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.download = "canvas-paint.webm";
 				downloadLink.click();
 
 				downloadLink.remove();
