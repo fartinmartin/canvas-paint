@@ -3,13 +3,13 @@
 ## Install
 
 ```
-npm i canvas-paint
+npm i @fartinmartin/canvas-paint
 ```
 
 ## Usage
 
 ```js
-import { Paint } from "canvas-paint";
+import { Paint } from "@fartinmartin/canvas-paint";
 
 const root = document.getElementById("root");
 const paint = new Paint(root, { width: 200, height: 200 });
