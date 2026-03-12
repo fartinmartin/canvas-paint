@@ -1,5 +1,5 @@
 {
-  "name": "canvas-paint",
+  "name": "@fartinmartin/canvas-paint",
   "version": "1.0.0",
   "type": "module",
   "files": [
