@@ -8,7 +8,7 @@ import { namespace } from '../utils/uuid';
 import { sleep } from 'radash';
 
 import FloodFill from 'q-floodfill';
-import { colorToRGBA, isSameColor, createOutlineCanvas } from '../utils/fill';
+import { colorToRGBA, isSameColor, dilate } from '../utils/fill';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
 // https://www.macarthur.me/posts/animate-canvas-in-a-worker
@@ -100,14 +100,22 @@ export class CanvasDraw extends Canvas {
 	protected drawFill(path: Path) {
 		if (this.canvas.className === `${namespace}temp`) return;
 
-		const canvas = this.canvas;
 		const context = this.context;
-		const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+		// Clip to document area so fill can't bleed into the margin.
+		// When margin is 0 this is identical to reading the full canvas.
+		const margin = this.options.margin ?? 0;
+		const scale = this.scale;
+		const marginPx = Math.round(margin * scale * devicePixelRatio);
+		const docW = Math.round(this.options.width * scale * devicePixelRatio);
+		const docH = Math.round(this.options.height * scale * devicePixelRatio);
+
+		const imageData = context.getImageData(marginPx, marginPx, docW, docH);
 
 		const { x: originalX, y: originalY, color: fillColor } = path.points[0];
-		// our canvas image size is not 1to1 with our point selection! and! imageData arrays need nice round integers for indexing
-		const x = Math.round(originalX * devicePixelRatio);
-		const y = Math.round(originalY * devicePixelRatio);
+		// canvas imageData is at physical pixel resolution; adjust coords for margin offset
+		const x = Math.round(originalX * devicePixelRatio) - marginPx;
+		const y = Math.round(originalY * devicePixelRatio) - marginPx;
 
 		const floodFill = new FloodFill(imageData);
 		floodFill.isSameColor = isSameColor;
@@ -115,11 +123,7 @@ export class CanvasDraw extends Canvas {
 		floodFill.collectModifiedPixels = true;
 		floodFill.fill(fillColor, x, y, this.brush.tolerance);
 
-		context.putImageData(floodFill.imageData, 0, 0);
-
-		// createOutlineCanvas() paints an outline in a blunt way..
-		// OR: could we get the edge as a {x,y}[] path from the `floodFill.modifiedPixels` directly? marching square algo?
-		const out = createOutlineCanvas(floodFill, fillColor);
-		context.drawImage(out.canvas, 0, 0, canvas.width / devicePixelRatio, canvas.height / devicePixelRatio); // prettier-ignore
+		dilate(floodFill, fillColor);
+		context.putImageData(floodFill.imageData, marginPx, marginPx);
 	}
 }
