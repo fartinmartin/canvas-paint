@@ -2,44 +2,43 @@ import { Path } from "./path";
 import { Point } from "./point";
 
 export class CommandStack {
-	private _stack: string[] = [];
-	private _redo: string[] = [];
+	private _paths: Path[] = [];
+	private _cursor: number = 0;
 
-	constructor(private _state: Path[] = []) {
-		this._stack.push(JSON.stringify(this._state));
+	constructor(initialState: Path[] = []) {
+		this._paths = [...initialState];
+		this._cursor = this._paths.length;
 	}
 
 	get state() {
-		const latestState = this._stack[this._stack.length - 1];
-		return JSON.parse(latestState) as Path[];
+		return this._paths.slice(0, this._cursor);
 	}
 
 	reset() {
-		this._stack = ["[]"];
-		this._redo = [];
+		this._paths = [];
+		this._cursor = 0;
 	}
 
 	execute(command: Command) {
-		const commandPath = command.execute(this.state);
-		const stringPath = JSON.stringify(commandPath);
-		this._stack.push(stringPath);
-		this._redo = []; // we don't want to allow stale redo states AFTER we commit new Paths!
+		const newState = command.execute(this._paths.slice(0, this._cursor));
+		this._paths = newState;
+		this._cursor = newState.length;
 	}
 
 	undo() {
-		if (this.canUndo) this._redo.push(this._stack.pop()!);
+		if (this.canUndo) this._cursor--;
 	}
 
 	redo() {
-		if (this.canRedo) this._stack.push(this._redo.pop()!);
+		if (this.canRedo) this._cursor++;
 	}
 
 	get canUndo() {
-		return this._stack.length > 1;
+		return this._cursor > 0;
 	}
 
 	get canRedo() {
-		return this._redo.length >= 1;
+		return this._cursor < this._paths.length;
 	}
 }
 

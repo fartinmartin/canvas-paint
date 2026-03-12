@@ -193,7 +193,7 @@ export class Paint {
 		return this.drawHistory(delay);
 	}
 
-	async drawHistory(delay?: number) {
+	async drawHistory(delay?: number): Promise<void> {
 		this.events.dispatch("drawing", () => {});
 		this.artboard.clear();
 		if (delay) {
@@ -203,7 +203,7 @@ export class Paint {
 				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness)
 				this.events.dispatch("drawingPath", () => {});
 			}
-			this.drawHistory(); // run this again w/o delay to remove crunchiness
+			return this.drawHistory(); // run this again w/o delay to remove crunchiness
 		} else {
 			for (const path of this.history.state) await this.artboard.draw(path);
 		}
