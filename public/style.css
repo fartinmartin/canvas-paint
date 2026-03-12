@@ -47,6 +47,11 @@ button:hover {
 	background-color: lightgray;
 }
 
+button.label {
+	pointer-events: none;
+	cursor: default;
+}
+
 header {
 	height: var(--header-height);
 	border-bottom: 1px solid lightgray;
@@ -110,7 +115,6 @@ section {
 	margin-top: 0.5rem;
 	border-collapse: collapse;
 	font-size: 0.75rem;
-	width: 100%;
 }
 
 #debug-table th {
