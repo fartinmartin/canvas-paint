@@ -226,6 +226,7 @@ export class Paint {
 
 		this.options.width = width;
 		this.options.height = height;
+		this.options.bgColor = bgColor;
 
 		const currentMargin = this.options.margin ?? 0;
 		const marginDelta = currentMargin - (savedMargin ?? 0);

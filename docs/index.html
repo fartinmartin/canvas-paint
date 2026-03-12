@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="./style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>canvas-paint ⬝ demo</title>
-		<script type="module" crossorigin src="./assets/index-Baq_CHM8.js"></script>
+		<script type="module" crossorigin src="./assets/index-Br6fSnzG.js"></script>
 	</head>
 	<body>
 		<header>
@@ -17,55 +17,110 @@
 			<aside>
 				<div id="controls">
 					<div class="history">
-						<button onclick="demo.undo()">undo</button>
-						<button onclick="demo.redo()">redo</button>
+						<div class="row">
+							<button onclick="demo.undo()" title="undo"><svg class="remix"><use href="./remixicon.symbol.svg#ri-arrow-go-back-line"></use></svg></button>
+							<button onclick="demo.redo()" title="redo"><svg class="remix"><use href="./remixicon.symbol.svg#ri-arrow-go-forward-line"></use></svg></button>
+						</div>
 					</div>
 					<div class="mode">
-						<button onclick="demo.brush.mode = `draw`">draw</button>
-						<button onclick="demo.brush.mode = `erase`">erase</button>
-						<button onclick="demo.brush.mode = `fill`">fill</button>
+						<div class="row">
+							<button id="btn-mode-draw" onclick="setMode('draw')" title="draw"><svg class="remix"><use href="./remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
+							<button id="btn-mode-erase" onclick="setMode('erase')" title="erase"><svg class="remix"><use href="./remixicon.symbol.svg#ri-eraser-line"></use></svg></button>
+							<button id="btn-mode-fill" onclick="setMode('fill')" title="fill"><svg class="remix"><use href="./remixicon.symbol.svg#ri-paint-fill"></use></svg></button>
+						</div>
 					</div>
 					<div class="brush">
-						<button onclick="demo.brush.size--">brush-</button>
-						<button onclick="demo.brush.size++">brush+</button>
-						<input onchange="updateBrushColor(this)" type="color" />
+						<div class="row">
+							<button class="label" title="brush size"><svg class="remix"><use href="./remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
+							<button onclick="demo.brush.size--" title="brush size -"><svg class="remix"><use href="./remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+							<button onclick="demo.brush.size++" title="brush size +"><svg class="remix"><use href="./remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						</div>
+						<div class="row">
+							<input onchange="updateBrushColor(this)" type="color" />
+						</div>
 					</div>
 					<div class="radius">
-						<button onclick="demo.brush.lazy.radius--">radius-</button>
-						<button onclick="demo.brush.lazy.radius++">radius+</button>
+						<div class="row">
+							<button class="label" title="radius"><svg class="remix"><use href="./remixicon.symbol.svg#ri-focus-line"></use></svg></button>
+							<button onclick="demo.brush.radius--" title="radius -"><svg class="remix"><use href="./remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+							<button onclick="demo.brush.radius++" title="radius +"><svg class="remix"><use href="./remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						</div>
+						<div class="row">
+							<button class="label" title="lerp factor"><svg class="remix"><use href="./remixicon.symbol.svg#ri-speed-line"></use></svg></button>
+							<button onclick="demo.brush.lerpFactor -= 0.5" title="lerp factor -"><svg class="remix"><use href="./remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+							<button onclick="demo.brush.lerpFactor += 0.5" title="lerp factor +"><svg class="remix"><use href="./remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						</div>
 					</div>
 					<div class="tolerance">
-						<button onclick="demo.brush.tolerance--">tolerance-</button>
-						<button onclick="demo.brush.tolerance++">tolerance+</button>
+						<div class="row">
+							<button class="label" title="tolerance"><svg class="remix"><use href="./remixicon.symbol.svg#ri-contrast-line"></use></svg></button>
+							<button onclick="demo.brush.tolerance--" title="tolerance -"><svg class="remix"><use href="./remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+							<button onclick="demo.brush.tolerance++" title="tolerance +"><svg class="remix"><use href="./remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						</div>
 					</div>
 					<div class="remove">
-						<button onclick="demo.clear()">clear</button>
-						<button onclick="demo.destroy()">destroy</button>
+						<div class="row">
+							<button onclick="demo.clear()" title="clear"><svg class="remix"><use href="./remixicon.symbol.svg#ri-delete-bin-line"></use></svg></button>
+							<button onclick="demo.destroy()" title="destroy"><svg class="remix"><use href="./remixicon.symbol.svg#ri-file-shred-line"></use></svg></button>
+						</div>
 					</div>
 					<div class="io">
-						<!-- prettier-ignore -->
-						<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))">save</button>
-						<!-- prettier-ignore -->
-						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
-						<button onclick="downloadImage()">png</button>
-						<button onclick="demo.drawHistory(10)">draw</button>
+						<div class="row">
+							<!-- prettier-ignore -->
+							<button onclick="localStorage.setItem('drawing', JSON.stringify(demo.save()))" title="save"><svg class="remix"><use href="./remixicon.symbol.svg#ri-save-line"></use></svg></button>
+							<!-- prettier-ignore -->
+							<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))" title="load"><svg class="remix"><use href="./remixicon.symbol.svg#ri-folder-open-line"></use></svg></button>
+							<button onclick="demo.drawHistory({ delay: 10 })" title="playback"><svg class="remix"><use href="./remixicon.symbol.svg#ri-play-line"></use></svg></button>
+						</div>
+					</div>
+					<div class="export">
+						<div class="row">
+							<button onclick="downloadImage()" title="download png"><svg class="remix"><use href="./remixicon.symbol.svg#ri-image-line"></use></svg></button>
+							<button onclick="downloadVideo()" title="download webm"><svg class="remix"><use href="./remixicon.symbol.svg#ri-video-download-line"></use></svg></button>
+						</div>
 					</div>
 					<div class="drawing">
-						<input onchange="updateBgColor(this)" type="color" />
-						<input onchange="updateWidth(this)" type="number" />
-						<input onchange="updateHeight(this)" type="number" />
+						<div class="row">
+							<input onchange="updateBgColor(this)" type="color" />
+						</div>
+						<div class="row">
+							<input onchange="updateWidth(this)" type="number" />
+						</div>
+						<div class="row">
+							<input onchange="updateHeight(this)" type="number" />
+						</div>
+						<div class="row">
+							<input onchange="updateMargin(this)" type="number" />
+						</div>
 					</div>
 					<div class="ui">
-						<button onclick="png">point</button>
-						<button onclick="png">brush</button>
-						<button onclick="png">center</button>
-						<button onclick="png">chain</button>
+						<div class="row">
+							<button id="btn-ui-pointer" onclick="toggleUI('pointer')" title="toggle pointer"><svg class="remix"><use href="./remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
+							<button id="btn-ui-brush" onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="./remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
+						</div>
+						<div class="row">
+							<button id="btn-ui-center" onclick="toggleUI('center')" title="toggle center"><svg class="remix"><use href="./remixicon.symbol.svg#ri-focus-line"></use></svg></button>
+							<button id="btn-ui-chain" onclick="toggleUI('chain')" title="toggle chain"><svg class="remix"><use href="./remixicon.symbol.svg#ri-link-m"></use></svg></button>
+						</div>
+					</div>
+					<div class="grid">
+						<div class="row">
+							<button id="btn-grid-toggle" onclick="toggleGrid('grid')" title="toggle grid"><svg class="remix"><use href="./remixicon.symbol.svg#ri-eye-line"></use></svg></button>
+							<button id="btn-grid-boundary" onclick="toggleGrid('boundary')" title="toggle boundary"><svg class="remix"><use href="./remixicon.symbol.svg#ri-checkbox-blank-line"></use></svg></button>
+							<button id="btn-grid-lines" onclick="toggleGrid('lines')" title="toggle grid lines"><svg class="remix"><use href="./remixicon.symbol.svg#ri-grid-line"></use></svg></button>
+						</div>
+						<div class="row">
+							<input onchange="updateGridSize(this)" type="number" />
+						</div>
 					</div>
 				</div>
 			</aside>
 
 			<section>
 				<div id="app"></div>
+				<table id="debug-table">
+					<tbody id="debug"></tbody>
+				</table>
 			</section>
 		</main>
 
@@ -79,15 +134,87 @@
 
 				const width = document.querySelectorAll("input[type='number']")[0];
 				const height = document.querySelectorAll("input[type='number']")[1];
+				const margin = document.querySelectorAll("input[type='number']")[2];
 				width.value = demo.options.width;
 				height.value = demo.options.height;
+				margin.value = demo.options.margin ?? 0;
+
+				const gridSize = document.querySelectorAll("input[type='number']")[3];
+				gridSize.value = demo.options.grid?.lines?.size ?? 50;
+
+				syncActiveStates();
 			});
+
+			function setMode(mode) {
+				demo.brush.mode = mode;
+				syncActiveStates();
+			}
 
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
 			const updateBgColor = (target) => (demo.options.bgColor = target.value);
 
-			const updateWidth = (target) => (demo.options.width = target.value);
-			const updateHeight = (target) => (demo.options.height = target.value);
+			const updateWidth = (target) => demo.setSize(Number(target.value), demo.options.height);
+			const updateHeight = (target) => demo.setSize(demo.options.width, Number(target.value));
+			const updateMargin = (target) => demo.setMargin(Number(target.value));
+			const updateGridSize = (target) => { const grid = demo.options.grid ??= {}; (grid.lines ??= {}).size = Number(target.value); demo.grid.draw(); };
+
+			function setActive(id, isActive) {
+				document.getElementById(id)?.classList.toggle('active', isActive);
+			}
+
+			function syncActiveStates() {
+				const ui = demo.options.ui ?? {};
+				setActive('btn-mode-draw',   demo.brush.mode === 'draw');
+				setActive('btn-mode-erase',  demo.brush.mode === 'erase');
+				setActive('btn-mode-fill',   demo.brush.mode === 'fill');
+				setActive('btn-ui-pointer',  ui.pointer?.show !== false);
+				setActive('btn-ui-brush',    ui.brush !== false);
+				setActive('btn-ui-center',   ui.center?.show !== false);
+				setActive('btn-ui-chain',    ui.chain?.show === true);
+
+				const grid = demo.options.grid ?? {};
+				const gridOn = grid.show !== false;
+				setActive('btn-grid-toggle',   gridOn);
+				setActive('btn-grid-boundary', gridOn && grid.boundary?.show !== false);
+				setActive('btn-grid-lines',    gridOn && grid.lines?.show === true);
+
+				document.querySelector('#btn-grid-toggle use').setAttribute(
+					'href',
+					gridOn
+						? '/remixicon.symbol.svg#ri-eye-line'
+						: '/remixicon.symbol.svg#ri-eye-off-line'
+				);
+			}
+
+			function toggleUI(element) {
+				const ui = demo.options.ui ??= {};
+				if (element === "brush") {
+					ui.brush = ui.brush === false ? undefined : false;
+				} else if (element === "chain") {
+					ui.chain ??= {};
+					ui.chain.show = ui.chain.show === true ? false : true;
+				} else {
+					ui[element] ??= {};
+					ui[element].show = ui[element].show === false ? undefined : false;
+				}
+				demo.ui.drawInterface();
+				syncActiveStates();
+			}
+
+			function toggleGrid(element) {
+				const grid = demo.options.grid ??= {};
+				if (element === "grid") {
+					grid.show = grid.show === false ? undefined : false;
+				} else if (element === "lines") {
+					grid.lines ??= {};
+					grid.lines.show = grid.lines.show === true ? false : true;
+				} else if (element === "boundary") {
+					grid.boundary ??= {};
+					grid.boundary.show = grid.boundary.show === false ? undefined : false;
+				}
+				demo.grid.draw();
+				syncActiveStates();
+			}
 
 			async function downloadImage() {
 				const blob = await demo.toBlob();
@@ -95,6 +222,17 @@
 				const downloadLink = document.createElement("a");
 				downloadLink.href = window.URL.createObjectURL(blob);
 				downloadLink.download = "canvas-paint.png";
+				downloadLink.click();
+
+				downloadLink.remove();
+			}
+
+			async function downloadVideo() {
+				const blob = await demo.toVideo({ delay: 10 });
+
+				const downloadLink = document.createElement("a");
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.download = "canvas-paint.webm";
 				downloadLink.click();
 
 				downloadLink.remove();

@@ -19,6 +19,7 @@
 		"build": "tsc && vite build && npm run types && npm run demo",
 		"preview": "vite preview",
 		"demo": "vite build --config vite.demo.js",
+		"release": "npm run build && npm publish",
 		"types": "npx tsc --noEmit false --declaration --emitDeclarationOnly --declarationDir dist/types"
 	},
 	"devDependencies": {

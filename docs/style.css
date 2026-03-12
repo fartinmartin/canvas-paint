@@ -36,11 +36,28 @@ button {
 input[type="number"]:is(:not(:last-child)),
 input[type="color"]:is(:not(:last-child)),
 button:is(:not(:last-child)) {
+	border-right: 0;
+}
+
+#controls .row:not(:last-child) > * {
 	border-bottom: 0;
 }
 
 button:hover {
 	background-color: lightgray;
+}
+
+button.active {
+	background-color: silver;
+}
+
+button.active:hover {
+	background-color: #b0b0b0;
+}
+
+button.label {
+	pointer-events: none;
+	cursor: default;
 }
 
 header {
@@ -69,7 +86,7 @@ aside {
 	border-right: 1px dashed lightgray;
 
 	flex-shrink: 0;
-	max-width: 15ch;
+	width: 8rem;
 
 	position: relative;
 }
@@ -79,8 +96,7 @@ aside::after {
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	width: 100%;
-	max-width: 15ch;
+	width: 8rem;
 	height: 2rem;
 	background: linear-gradient(
 		0deg,
@@ -103,13 +119,55 @@ section {
 	outline: 2px solid salmon;
 }
 
+#debug-table {
+	margin-top: 0.5rem;
+	border-collapse: collapse;
+	font-size: 0.75rem;
+}
+
+#debug-table th {
+	text-align: left;
+	color: slategray;
+	padding-right: 1em;
+	font-weight: normal;
+}
+
+#debug-table td {
+	font-variant-numeric: tabular-nums;
+}
+
 #controls {
 	display: flex;
 	flex-direction: column;
+}
+
+#controls {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
 }
 
 #controls > div {
 	display: flex;
 	flex-direction: column;
 	margin-bottom: 0.5rem;
+}
+
+#controls .row {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+#controls .row > * {
+	flex: 1;
+	min-width: 0;
+}
+
+.remix {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+	vertical-align: middle;
+	pointer-events: none;
 }
