@@ -30,8 +30,8 @@
 						<input onchange="updateBrushColor(this)" type="color" />
 					</div>
 					<div class="radius">
-						<button onclick="demo.brush.lazy.radius--">radius-</button>
-						<button onclick="demo.brush.lazy.radius++">radius+</button>
+						<button onclick="demo.brush.radius--">radius-</button>
+						<button onclick="demo.brush.radius++">radius+</button>
 					</div>
 					<div class="tolerance">
 						<button onclick="demo.brush.tolerance--">tolerance-</button>
@@ -66,6 +66,9 @@
 
 			<section>
 				<div id="app"></div>
+				<table id="debug-table">
+					<tbody id="debug"></tbody>
+				</table>
 			</section>
 		</main>
 
@@ -90,6 +93,28 @@
 			demo.events.on("draw", () => console.log("draw"));
 			demo.events.on("end", () => console.log("end"));
 			demo.events.on("leave", () => console.log("leave"));
+
+			// Debug panel
+			const debug = document.getElementById("debug");
+			const fmt = (n) => n.toFixed(1);
+
+			function updateDebug() {
+				const pointer = demo.brush.lazy.getPointerCoordinates();
+				const brush = demo.brush.lazy.getBrushCoordinates();
+				const currentRadius = demo.brush.lazy.getRadius();
+				const targetRadius = demo.brush.radius;
+
+				debug.innerHTML = `
+					<tr><th>pointer</th><td>${fmt(pointer.x)}, ${fmt(pointer.y)}</td></tr>
+					<tr><th>brush</th><td>${fmt(brush.x)}, ${fmt(brush.y)}</td></tr>
+					<tr><th>radius</th><td>${fmt(currentRadius)} / ${fmt(targetRadius)}</td></tr>
+					<tr><th>drawing</th><td>${demo.brush.isDrawing}</td></tr>
+				`.trim();
+
+				requestAnimationFrame(updateDebug);
+			}
+
+			requestAnimationFrame(updateDebug);
 		</script>
 
 		<script>
