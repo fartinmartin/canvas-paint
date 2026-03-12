@@ -103,6 +103,24 @@ section {
 	outline: 2px solid salmon;
 }
 
+#debug-table {
+	margin-top: 0.5rem;
+	border-collapse: collapse;
+	font-size: 0.75rem;
+	width: 100%;
+}
+
+#debug-table th {
+	text-align: left;
+	color: slategray;
+	padding-right: 1em;
+	font-weight: normal;
+}
+
+#debug-table td {
+	font-variant-numeric: tabular-nums;
+}
+
 #controls {
 	display: flex;
 	flex-direction: column;

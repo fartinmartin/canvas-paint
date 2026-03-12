@@ -44,6 +44,9 @@ export class Brush {
 	private _join: Join;
 	private _tolerance: number;
 
+	private _targetRadius: number;
+	private _strokeDistance: number = 0;
+
 	private _lazy: LazyBrush;
 	private _listeners: {
 		event: InputEventKeys;
@@ -51,11 +54,13 @@ export class Brush {
 	}[] = [];
 
 	constructor(private root: HTMLElement, options: BrushOptions) {
+		this._targetRadius = options.lazy?.radius ?? 0;
+
 		this._lazy = new LazyBrush({
-			radius: options.lazy?.radius ?? 0,
 			enabled: options.lazy?.enabled ?? true,
 			initialPoint: options.lazy?.initialPoint ?? { x: 0, y: 0 },
 		});
+		this._lazy.setRadius(0); // lerps to _targetRadius at stroke start (can't pass 0 to constructor — library treats it as falsy and uses its default)
 
 		this._size = options.brush?.size ?? 5;
 		this._color = options.brush?.color ?? "#ffaa00";
@@ -149,15 +154,19 @@ export class Brush {
 		this.events.dispatch("brushUpdate", this.payload);
 	}
 
+	get radius() {
+		return this._targetRadius;
+	}
+
+	set radius(value: number) {
+		this._targetRadius = value;
+		this.events.dispatch("brushUpdate", this.payload);
+	}
+
 	get lazy() {
 		// we need access to our LazyBrush (at least the x and y values), but we don't want to allow anyone to change settings w/o us knowing!
 		return this._lazy;
 	}
-
-	// set lazy(options: {}) {
-	// 	// TODO: how to do this? 🤔
-	// 	this._lazy;
-	// }
 
 	private get point() {
 		const { x, y } = this._lazy.brush.toObject();
@@ -176,6 +185,16 @@ export class Brush {
 	private handleMove(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // don't scroll on iOS
 		const coords = getInputCoords(event, this.root);
+
+		if (this._isDrawing && this._targetRadius > 0) {
+			const prev = this._lazy.getPointerCoordinates();
+			const dx = coords.x - prev.x;
+			const dy = coords.y - prev.y;
+			this._strokeDistance += Math.sqrt(dx * dx + dy * dy);
+			const t = Math.min(this._strokeDistance / this._targetRadius, 1);
+			this._lazy.setRadius(t * this._targetRadius);
+		}
+
 		this._lazy.update(coords);
 		this.events.dispatch("move", this.payload);
 	}
@@ -183,6 +202,8 @@ export class Brush {
 	private handleDown(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		const coords = getInputCoords(event, this.root);
+		this._strokeDistance = 0;
+		this._lazy.setRadius(0);
 		this._lazy.update(coords);
 		this._isDrawing = true;
 		this.events.dispatch("down", this.payload);
@@ -191,12 +212,14 @@ export class Brush {
 	private handleUp(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
+		this._lazy.setRadius(0);
 		this.events.dispatch("up", this.payload);
 	}
 
 	private handleLeave(this: Brush, event: MouseEvent | TouchEvent) {
 		event.preventDefault();
 		this._isDrawing = false;
+		this._lazy.setRadius(0);
 		this.events.dispatch("leave", this.payload);
 	}
 }
