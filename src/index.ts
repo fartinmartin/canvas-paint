@@ -16,6 +16,7 @@ import { resizeObserver } from "./utils/resize";
 import { scalePoint, simplifyPoints } from "./utils/points";
 
 export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOptions; // prettier-ignore
+export type PlaybackOptions = { delay?: number; duration?: number };
 
 export class Paint {
 	static className = namespace + "container";
@@ -172,7 +173,7 @@ export class Paint {
 
 	async load(
 		{ width, height, paths, bgColor }: ReturnType<typeof this.save>,
-		delay?: number
+		options: PlaybackOptions = {}
 	) {
 		this.destroy();
 
@@ -190,19 +191,32 @@ export class Paint {
 			this.history.execute(c);
 		});
 
-		return this.drawHistory(delay);
+		return this.drawHistory(options);
 	}
 
-	async drawHistory(delay?: number): Promise<void> {
+	private resolveDelay({ delay, duration }: PlaybackOptions): number | undefined {
+		if (duration !== undefined) {
+			const totalPoints = this.history.state.reduce((sum, path) => sum + path.points.length, 0);
+			return totalPoints > 0 ? duration / totalPoints : undefined;
+		}
+		return delay;
+	}
+
+	private async replayHistory(delay: number): Promise<void> {
+		for (const path of this.history.state) {
+			await this.temp.draw(path, delay); // draw lines point-by-point to temp
+			this.artboard.draw(path); // draw lines immediately to artboard
+			this.temp.clear(); // clear temp (these 3 steps reduce chunkiness)
+			this.events.dispatch("drawingPath", () => {});
+		}
+	}
+
+	async drawHistory(options: PlaybackOptions = {}): Promise<void> {
 		this.events.dispatch("drawing", () => {});
 		this.artboard.clear();
+		const delay = this.resolveDelay(options);
 		if (delay) {
-			for (const path of this.history.state) {
-				await this.temp.draw(path, delay); // draw lines point-by-point to temp
-				this.artboard.draw(path); // draw lines immediately to artboard
-				this.temp.clear(); // clear temp (these 3 steps reduce chunkiness)
-				this.events.dispatch("drawingPath", () => {});
-			}
+			await this.replayHistory(delay);
 			return this.drawHistory(); // run this again w/o delay to remove crunchiness
 		} else {
 			for (const path of this.history.state) await this.artboard.draw(path);
@@ -210,7 +224,10 @@ export class Paint {
 		this.events.dispatch("drawn", () => {});
 	}
 
-	async toVideo(delay: number, fps = 60): Promise<Blob> {
+	async toVideo(options: PlaybackOptions & { fps?: number } = {}): Promise<Blob> {
+		const delay = this.resolveDelay(options) ?? 10;
+		const fps = options.fps ?? 60;
+
 		const recording = document.createElement("canvas");
 		recording.width = this.artboard.canvas.width / devicePixelRatio;
 		recording.height = this.artboard.canvas.height / devicePixelRatio;
@@ -237,11 +254,10 @@ export class Paint {
 		requestAnimationFrame(composite);
 		recorder.start();
 
-		for (const path of this.history.state) {
-			await this.temp.draw(path, delay);
-			this.artboard.draw(path);
-			this.temp.clear();
-		}
+		await this.replayHistory(delay);
+
+		// Wait for one final composite frame to capture the last artboard state
+		await new Promise<void>((r) => requestAnimationFrame(() => r()));
 
 		compositing = false;
 		recorder.stop();

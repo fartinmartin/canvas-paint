@@ -48,7 +48,7 @@
 						<button onclick="demo.load(JSON.parse(localStorage.getItem('drawing')))">load</button>
 						<button onclick="downloadImage()">png</button>
 						<button onclick="downloadVideo()">webm</button>
-						<button onclick="demo.drawHistory(10)">draw</button>
+						<button onclick="demo.drawHistory({ delay: 10 })">draw</button>
 					</div>
 					<div class="drawing">
 						<input onchange="updateBgColor(this)" type="color" />
@@ -123,7 +123,7 @@
 			}
 
 			async function downloadVideo() {
-				const blob = await demo.toVideo(10);
+				const blob = await demo.toVideo({ delay: 10 });
 
 				const downloadLink = document.createElement("a");
 				downloadLink.href = window.URL.createObjectURL(blob);
