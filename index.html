@@ -32,8 +32,8 @@
 					<div class="radius">
 						<button onclick="demo.brush.radius--" title="radius -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-radio-button-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
 						<button onclick="demo.brush.radius++" title="radius +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-radio-button-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
-						<button onclick="demo.brush.lerpFactor -= 0.5" title="lerp factor -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-speed-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
-						<button onclick="demo.brush.lerpFactor += 0.5" title="lerp factor +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-speed-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
+						<button onclick="demo.brush.lerpFactor -= 0.5" title="lerp factor -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-rewind-mini-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
+						<button onclick="demo.brush.lerpFactor += 0.5" title="lerp factor +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-speed-mini-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 					</div>
 					<div class="tolerance">
 						<button onclick="demo.brush.tolerance--" title="tolerance -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-contrast-line"></use></svg><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
@@ -58,10 +58,10 @@
 						<input onchange="updateHeight(this)" type="number" />
 					</div>
 					<div class="ui">
-						<button onclick="png" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
-						<button onclick="png" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg></button>
-						<button onclick="png" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
-						<button onclick="png" title="toggle chain"><svg class="remix"><use href="/remixicon.symbol.svg#ri-links-line"></use></svg></button>
+						<button onclick="toggleUI('pointer')" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
+						<button onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg></button>
+						<button onclick="toggleUI('center')" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
+						<button onclick="toggleUI('chain')" title="toggle chain"><svg class="remix"><use href="/remixicon.symbol.svg#ri-links-line"></use></svg></button>
 					</div>
 				</div>
 			</aside>
@@ -138,6 +138,20 @@
 
 			const updateWidth = (target) => (demo.options.width = target.value);
 			const updateHeight = (target) => (demo.options.height = target.value);
+
+			function toggleUI(element) {
+				const ui = demo.options.ui ??= {};
+				if (element === "brush") {
+					ui.brush = ui.brush === false ? undefined : false;
+				} else if (element === "chain") {
+					ui.chain ??= {};
+					ui.chain.show = ui.chain.show === true ? false : true;
+				} else {
+					ui[element] ??= {};
+					ui[element].show = ui[element].show === false ? undefined : false;
+				}
+				demo.ui.drawInterface();
+			}
 
 			async function downloadImage() {
 				const blob = await demo.toBlob();

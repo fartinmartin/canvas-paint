@@ -35,7 +35,7 @@ export class Paint {
 
 	public points: Point[] = [];
 
-	constructor(public root: HTMLElement, private options: PaintOptions) {
+	constructor(public root: HTMLElement, public options: PaintOptions) {
 		this.root.classList.add(Paint.className);
 		this.root.dataset.canvasPaintId = this.id;
 		this.instanceStyles = createInstanceStyles(this.id, options)!;
