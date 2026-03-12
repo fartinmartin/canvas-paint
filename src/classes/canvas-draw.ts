@@ -1,14 +1,14 @@
-import { Canvas, CanvasOptions } from "./canvas";
-import { Brush } from "./brush";
-import { Path } from "./path";
-import { Point } from "./point";
+import { Canvas, CanvasOptions } from './canvas';
+import { Brush } from './brush';
+import { Path } from './path';
+import { Point } from './point';
 
-import { getMidCoords, scalePath } from "../utils/points";
-import { namespace } from "../utils/uuid";
-import { sleep } from "radash";
+import { getMidCoords, scalePath } from '../utils/points';
+import { namespace } from '../utils/uuid';
+import { sleep } from 'radash';
 
-import FloodFill from "q-floodfill";
-import { colorToRGBA, isSameColor, createOutlineCanvas } from "../utils/fill";
+import FloodFill from 'q-floodfill';
+import { colorToRGBA, isSameColor, createOutlineCanvas } from '../utils/fill';
 
 // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
 // https://www.macarthur.me/posts/animate-canvas-in-a-worker
@@ -18,24 +18,24 @@ export class CanvasDraw extends Canvas {
 		public root: HTMLElement,
 		protected className: string,
 		protected brush: Brush,
-		protected options: CanvasOptions
+		protected options: CanvasOptions,
 	) {
 		super(root, className, options);
 	}
 
 	async draw(p: Path, delay?: number) {
 		const path = scalePath(p, this.scale); // scale here so that drawings are scaled whilst drawing, but also whislt playing back history
-		if (path.mode === "clear") return this.clear();
+		if (path.mode === 'clear') return this.clear();
 
 		const drawAction = (mode: string, slice: Path) =>
-			mode !== "fill" ? this.drawPath(slice) : this.drawFill(slice);
+			mode !== 'fill' ? this.drawPath(slice) : this.drawFill(slice);
 
 		if (!delay) {
 			drawAction(path.mode, path);
 		} else {
 			for (let i = 0; i < path.points.length; i++) {
 				const slice = { ...path, points: path.points.slice(0, i + 1) };
-				await drawAction(slice.mode, slice);
+				drawAction(slice.mode, slice);
 				await sleep(delay);
 			}
 		}
@@ -48,16 +48,16 @@ export class CanvasDraw extends Canvas {
 		// we need to see the temp canvas paint erasing paths
 		const isTemp = this.canvas.classList.contains(`${namespace}temp`);
 		this.context.globalCompositeOperation =
-			isTemp || mode !== "erase" ? "source-over" : "destination-out";
+			isTemp || mode !== 'erase' ? 'source-over' : 'destination-out';
 
 		this.context.lineWidth = size;
 		this.context.lineCap = cap;
 		this.context.lineJoin = join;
 
-		const bgColor = this.options.bgColor ?? "white";
+		const bgColor = this.options.bgColor ?? 'white';
 
-		this.context.strokeStyle = mode === "erase" ? bgColor : color;
-		this.context.fillStyle = mode === "erase" ? bgColor : color;
+		this.context.strokeStyle = mode === 'erase' ? bgColor : color;
+		this.context.fillStyle = mode === 'erase' ? bgColor : color;
 	}
 
 	protected drawPath(path: Path) {
@@ -91,8 +91,8 @@ export class CanvasDraw extends Canvas {
 		this.context.beginPath();
 
 		const r = size / 2;
-		if (cap === "round") this.context.arc(p1.x, p1.y, r, 0, 2 * Math.PI);
-		if (cap !== "round") this.context.rect(p1.x - r, p1.y - r, size, size);
+		if (cap === 'round') this.context.arc(p1.x, p1.y, r, 0, 2 * Math.PI);
+		if (cap !== 'round') this.context.rect(p1.x - r, p1.y - r, size, size);
 
 		this.context.fill();
 	}
@@ -100,11 +100,8 @@ export class CanvasDraw extends Canvas {
 	protected drawFill(path: Path) {
 		if (this.canvas.className === `${namespace}temp`) return;
 
-		// TODO: ⚠️ what's the best way to get access to this.artboard?
-		const canvas = this.root.querySelector(`.${namespace}artboard`);
-		if (!canvas || !(canvas instanceof HTMLCanvasElement)) return;
-
-		const context = canvas.getContext("2d")!;
+		const canvas = this.canvas;
+		const context = this.context;
 		const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
 		const { x: originalX, y: originalY, color: fillColor } = path.points[0];

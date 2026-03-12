@@ -1,7 +1,6 @@
 import FloodFill, { ColorRGBA, setColorAtPixel } from "q-floodfill";
 import { parseToRgba } from "color2k";
 import combinate from "combinate";
-// import { differenceEuclidean } from "culori"; // @ts-ignore
 
 export function colorToRGBA(color: string): ColorRGBA {
 	const rgba = parseToRgba(color);
@@ -21,10 +20,7 @@ export function isSameColor(a: ColorRGBA, b: ColorRGBA, tolerance = 0) {
 		Math.abs(a.a - b.a) > tolerance
 	);
 
-	// const diff = differenceEuclidean("rgb", [1, 1, 1, 1]);
-	// const diffAB = diff(a, b);
-
-	return original; // return diffAB <= tolerance;
+	return original;
 }
 
 export function createOutlineCanvas(
