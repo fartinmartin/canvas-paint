@@ -36,7 +36,7 @@ button {
 input[type="number"]:is(:not(:last-child)),
 input[type="color"]:is(:not(:last-child)),
 button:is(:not(:last-child)) {
-	border-bottom: 0;
+	border-right: 0;
 }
 
 button:hover {
@@ -69,7 +69,7 @@ aside {
 	border-right: 1px dashed lightgray;
 
 	flex-shrink: 0;
-	max-width: 15ch;
+	width: 8rem;
 
 	position: relative;
 }
@@ -79,8 +79,7 @@ aside::after {
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	width: 100%;
-	max-width: 15ch;
+	width: 8rem;
 	height: 2rem;
 	background: linear-gradient(
 		0deg,
@@ -126,10 +125,28 @@ section {
 	flex-direction: column;
 }
 
+#controls {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
 #controls > div {
 	display: flex;
 	flex-direction: column;
+	gap: 2px;
 	margin-bottom: 0.5rem;
+}
+
+#controls .row {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+#controls .row > * {
+	flex: 1;
+	min-width: 0;
 }
 
 .remix {
