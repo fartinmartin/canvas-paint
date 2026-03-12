@@ -210,6 +210,47 @@ export class Paint {
 		this.events.dispatch("drawn", () => {});
 	}
 
+	async toVideo(delay: number, fps = 60): Promise<Blob> {
+		const recording = document.createElement("canvas");
+		recording.width = this.artboard.canvas.width / devicePixelRatio;
+		recording.height = this.artboard.canvas.height / devicePixelRatio;
+		const ctx = recording.getContext("2d")!;
+		const { width, height } = recording;
+
+		const stream = recording.captureStream(fps);
+		const recorder = new MediaRecorder(stream);
+		const chunks: Blob[] = [];
+		recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+		// Composite artboard + temp onto the recording canvas each frame
+		let compositing = true;
+		const composite = () => {
+			ctx.fillStyle = this.options.bgColor ?? "transparent";
+			ctx.fillRect(0, 0, width, height);
+			ctx.drawImage(this.artboard.canvas, 0, 0, width, height);
+			ctx.drawImage(this.temp.canvas, 0, 0, width, height);
+			if (compositing) requestAnimationFrame(composite);
+		};
+
+		this.artboard.clear();
+		this.temp.clear();
+		requestAnimationFrame(composite);
+		recorder.start();
+
+		for (const path of this.history.state) {
+			await this.temp.draw(path, delay);
+			this.artboard.draw(path);
+			this.temp.clear();
+		}
+
+		compositing = false;
+		recorder.stop();
+
+		return new Promise((resolve) => {
+			recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+		});
+	}
+
 	async toBlob(type?: string | undefined, quality?: number) {
 		const canvas = document.createElement("canvas");
 		const context = canvas.getContext("2d")!;
