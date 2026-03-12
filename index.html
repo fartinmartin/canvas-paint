@@ -23,14 +23,14 @@
 					</div>
 					<div class="mode">
 						<div class="row">
-							<button onclick="demo.brush.mode = `draw`" title="draw"><svg class="remix"><use href="/remixicon.symbol.svg#ri-pencil-line"></use></svg></button>
+							<button onclick="demo.brush.mode = `draw`" title="draw"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
 							<button onclick="demo.brush.mode = `erase`" title="erase"><svg class="remix"><use href="/remixicon.symbol.svg#ri-eraser-line"></use></svg></button>
 							<button onclick="demo.brush.mode = `fill`" title="fill"><svg class="remix"><use href="/remixicon.symbol.svg#ri-paint-fill"></use></svg></button>
 						</div>
 					</div>
 					<div class="brush">
 						<div class="row">
-							<button class="label"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg></button>
+							<button class="label"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
 							<button onclick="demo.brush.size--" title="brush size -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
 							<button onclick="demo.brush.size++" title="brush size +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 						</div>
@@ -92,7 +92,7 @@
 					<div class="ui">
 						<div class="row">
 							<button onclick="toggleUI('pointer')" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
-							<button onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-line"></use></svg></button>
+							<button onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
 						</div>
 						<div class="row">
 							<button onclick="toggleUI('center')" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
@@ -172,8 +172,8 @@
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
 			const updateBgColor = (target) => (demo.options.bgColor = target.value);
 
-			const updateWidth = (target) => (demo.options.width = target.value);
-			const updateHeight = (target) => (demo.options.height = target.value);
+			const updateWidth = (target) => demo.setSize(Number(target.value), demo.options.height);
+			const updateHeight = (target) => demo.setSize(demo.options.width, Number(target.value));
 
 			function toggleUI(element) {
 				const ui = demo.options.ui ??= {};

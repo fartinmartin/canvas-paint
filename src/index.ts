@@ -40,18 +40,22 @@ export class Paint {
 		this.root.dataset.canvasPaintId = this.id;
 		this.instanceStyles = createInstanceStyles(this.id, options)!;
 
+		this.options = new Proxy(options, {
+			set: (target, prop, value) => {
+				(target as Record<string | symbol, unknown>)[prop] = value;
+				if (prop === "bgColor") createInstanceStyles(this.id, target);
+				return true;
+			},
+		});
+
 		resizeObserver(this.root, (e) => this.resize(e), options.debounce);
 
-		// the CanvasOptions portion of this.options needs to be "processed" (?) instead of being referenced/passed directly?
-		// i.e. if we want to change the dimensions or the background color post initalization, how would we do that?
+		this.brush = new Brush(root, this.options);
 
-		// would it be better to pass `this` to each of these classes instead of cherry picking `this.bush` and `options`?
-		this.brush = new Brush(root, options);
-
-		this.ui = new UI(root, this.brush, options);
-		this.temp = new Temp(root, this.brush, options);
-		this.artboard = new Artboard(root, this.brush, options);
-		this.grid = new Grid(root, options);
+		this.ui = new UI(root, this.brush, this.options);
+		this.temp = new Temp(root, this.brush, this.options);
+		this.artboard = new Artboard(root, this.brush, this.options);
+		this.grid = new Grid(root, this.options);
 
 		this.addListeners();
 	}
@@ -154,6 +158,18 @@ export class Paint {
 		this.temp.clear();
 		this.history.execute(new AddClear());
 		this.points = [];
+	}
+
+	async setSize(width: number, height: number) {
+		this.options.width = width;
+		this.options.height = height;
+
+		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
+			canvas.resize({ width, height });
+		});
+
+		createInstanceStyles(this.id, this.options);
+		await this.drawHistory();
 	}
 
 	destroy() {
