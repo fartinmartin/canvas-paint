@@ -47,6 +47,14 @@ button:hover {
 	background-color: lightgray;
 }
 
+button.active {
+	background-color: silver;
+}
+
+button.active:hover {
+	background-color: #b0b0b0;
+}
+
 button.label {
 	pointer-events: none;
 	cursor: default;

@@ -23,9 +23,9 @@
 					</div>
 					<div class="mode">
 						<div class="row">
-							<button onclick="demo.brush.mode = `draw`" title="draw"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
-							<button onclick="demo.brush.mode = `erase`" title="erase"><svg class="remix"><use href="/remixicon.symbol.svg#ri-eraser-line"></use></svg></button>
-							<button onclick="demo.brush.mode = `fill`" title="fill"><svg class="remix"><use href="/remixicon.symbol.svg#ri-paint-fill"></use></svg></button>
+							<button id="btn-mode-draw" onclick="setMode('draw')" title="draw"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
+							<button id="btn-mode-erase" onclick="setMode('erase')" title="erase"><svg class="remix"><use href="/remixicon.symbol.svg#ri-eraser-line"></use></svg></button>
+							<button id="btn-mode-fill" onclick="setMode('fill')" title="fill"><svg class="remix"><use href="/remixicon.symbol.svg#ri-paint-fill"></use></svg></button>
 						</div>
 					</div>
 					<div class="brush">
@@ -40,7 +40,7 @@
 					</div>
 					<div class="radius">
 						<div class="row">
-							<button class="label"><svg class="remix"><use href="/remixicon.symbol.svg#ri-radio-button-line"></use></svg></button>
+							<button class="label"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
 							<button onclick="demo.brush.radius--" title="radius -"><svg class="remix"><use href="/remixicon.symbol.svg#ri-subtract-line"></use></svg></button>
 							<button onclick="demo.brush.radius++" title="radius +"><svg class="remix"><use href="/remixicon.symbol.svg#ri-add-line"></use></svg></button>
 						</div>
@@ -60,7 +60,7 @@
 					<div class="remove">
 						<div class="row">
 							<button onclick="demo.clear()" title="clear"><svg class="remix"><use href="/remixicon.symbol.svg#ri-delete-bin-line"></use></svg></button>
-							<button onclick="demo.destroy()" title="destroy"><svg class="remix"><use href="/remixicon.symbol.svg#ri-close-circle-line"></use></svg></button>
+							<button onclick="demo.destroy()" title="destroy"><svg class="remix"><use href="/remixicon.symbol.svg#ri-file-shred-line"></use></svg></button>
 						</div>
 					</div>
 					<div class="io">
@@ -94,12 +94,22 @@
 					</div>
 					<div class="ui">
 						<div class="row">
-							<button onclick="toggleUI('pointer')" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
-							<button onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
+							<button id="btn-ui-pointer" onclick="toggleUI('pointer')" title="toggle pointer"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-3-line"></use></svg></button>
+							<button id="btn-ui-brush" onclick="toggleUI('brush')" title="toggle brush"><svg class="remix"><use href="/remixicon.symbol.svg#ri-brush-2-line"></use></svg></button>
 						</div>
 						<div class="row">
-							<button onclick="toggleUI('center')" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
-							<button onclick="toggleUI('chain')" title="toggle chain"><svg class="remix"><use href="/remixicon.symbol.svg#ri-links-line"></use></svg></button>
+							<button id="btn-ui-center" onclick="toggleUI('center')" title="toggle center"><svg class="remix"><use href="/remixicon.symbol.svg#ri-focus-line"></use></svg></button>
+							<button id="btn-ui-chain" onclick="toggleUI('chain')" title="toggle chain"><svg class="remix"><use href="/remixicon.symbol.svg#ri-link-m"></use></svg></button>
+						</div>
+					</div>
+					<div class="grid">
+						<div class="row">
+							<button id="btn-grid-toggle" onclick="toggleGrid('grid')" title="toggle grid"><svg class="remix"><use href="/remixicon.symbol.svg#ri-eye-line"></use></svg></button>
+							<button id="btn-grid-boundary" onclick="toggleGrid('boundary')" title="toggle boundary"><svg class="remix"><use href="/remixicon.symbol.svg#ri-checkbox-blank-line"></use></svg></button>
+							<button id="btn-grid-lines" onclick="toggleGrid('lines')" title="toggle grid lines"><svg class="remix"><use href="/remixicon.symbol.svg#ri-grid-line"></use></svg></button>
+						</div>
+						<div class="row">
+							<input onchange="updateGridSize(this)" type="number" />
 						</div>
 					</div>
 				</div>
@@ -172,7 +182,17 @@
 				width.value = demo.options.width;
 				height.value = demo.options.height;
 				margin.value = demo.options.margin ?? 0;
+
+				const gridSize = document.querySelectorAll("input[type='number']")[3];
+				gridSize.value = demo.options.grid?.lines?.size ?? 50;
+
+				syncActiveStates();
 			});
+
+			function setMode(mode) {
+				demo.brush.mode = mode;
+				syncActiveStates();
+			}
 
 			const updateBrushColor = (target) => (demo.brush.color = target.value);
 			const updateBgColor = (target) => (demo.options.bgColor = target.value);
@@ -180,6 +200,35 @@
 			const updateWidth = (target) => demo.setSize(Number(target.value), demo.options.height);
 			const updateHeight = (target) => demo.setSize(demo.options.width, Number(target.value));
 			const updateMargin = (target) => demo.setMargin(Number(target.value));
+			const updateGridSize = (target) => { const grid = demo.options.grid ??= {}; (grid.lines ??= {}).size = Number(target.value); demo.grid.draw(); };
+
+			function setActive(id, isActive) {
+				document.getElementById(id)?.classList.toggle('active', isActive);
+			}
+
+			function syncActiveStates() {
+				const ui = demo.options.ui ?? {};
+				setActive('btn-mode-draw',   demo.brush.mode === 'draw');
+				setActive('btn-mode-erase',  demo.brush.mode === 'erase');
+				setActive('btn-mode-fill',   demo.brush.mode === 'fill');
+				setActive('btn-ui-pointer',  ui.pointer?.show !== false);
+				setActive('btn-ui-brush',    ui.brush !== false);
+				setActive('btn-ui-center',   ui.center?.show !== false);
+				setActive('btn-ui-chain',    ui.chain?.show === true);
+
+				const grid = demo.options.grid ?? {};
+				const gridOn = grid.show !== false;
+				setActive('btn-grid-toggle',   gridOn);
+				setActive('btn-grid-boundary', gridOn && grid.boundary?.show !== false);
+				setActive('btn-grid-lines',    gridOn && grid.lines?.show === true);
+
+				document.querySelector('#btn-grid-toggle use').setAttribute(
+					'href',
+					gridOn
+						? '/remixicon.symbol.svg#ri-eye-line'
+						: '/remixicon.symbol.svg#ri-eye-off-line'
+				);
+			}
 
 			function toggleUI(element) {
 				const ui = demo.options.ui ??= {};
@@ -193,6 +242,22 @@
 					ui[element].show = ui[element].show === false ? undefined : false;
 				}
 				demo.ui.drawInterface();
+				syncActiveStates();
+			}
+
+			function toggleGrid(element) {
+				const grid = demo.options.grid ??= {};
+				if (element === "grid") {
+					grid.show = grid.show === false ? undefined : false;
+				} else if (element === "lines") {
+					grid.lines ??= {};
+					grid.lines.show = grid.lines.show === true ? false : true;
+				} else if (element === "boundary") {
+					grid.boundary ??= {};
+					grid.boundary.show = grid.boundary.show === false ? undefined : false;
+				}
+				demo.grid.draw();
+				syncActiveStates();
 			}
 
 			async function downloadImage() {
