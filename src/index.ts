@@ -181,11 +181,11 @@ export class Paint {
 		}
 
 		const totalMargin = margin * 2;
+		createInstanceStyles(this.id, this.options);
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
 			canvas.resize({ width: this.options.width + totalMargin, height: this.options.height + totalMargin });
 		});
 
-		createInstanceStyles(this.id, this.options);
 		await this.drawHistory();
 	}
 
@@ -194,11 +194,11 @@ export class Paint {
 		this.options.height = height;
 
 		const margin = (this.options.margin ?? 0) * 2;
+		createInstanceStyles(this.id, this.options);
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
 			canvas.resize({ width: width + margin, height: height + margin });
 		});
 
-		createInstanceStyles(this.id, this.options);
 		await this.drawHistory();
 	}
 
@@ -231,11 +231,10 @@ export class Paint {
 		const marginDelta = currentMargin - (savedMargin ?? 0);
 		const totalMargin = currentMargin * 2;
 
+		createInstanceStyles(this.id, this.options);
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {
 			canvas.resize({ width: width + totalMargin, height: height + totalMargin });
 		});
-
-		createInstanceStyles(this.id, this.options);
 
 		const adjustedPaths = marginDelta === 0 ? paths : paths.map((path) => {
 			if (path.mode === "clear") return path;
