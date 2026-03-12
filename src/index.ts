@@ -163,7 +163,22 @@ export class Paint {
 	}
 
 	async setMargin(margin: number) {
+		const marginDelta = margin - (this.options.margin ?? 0);
 		this.options.margin = margin;
+
+		if (marginDelta !== 0) {
+			this.history.transform((path) => {
+				if (path.mode === "clear") return path;
+				return {
+					...path,
+					points: path.points.map((p) => ({
+						...p,
+						x: p.x + marginDelta * path.scale,
+						y: p.y + marginDelta * path.scale,
+					})),
+				};
+			});
+		}
 
 		const totalMargin = margin * 2;
 		[this.ui, this.temp, this.artboard, this.grid].forEach((canvas) => {

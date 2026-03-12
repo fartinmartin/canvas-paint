@@ -19,6 +19,10 @@ export class CommandStack {
 		this._cursor = 0;
 	}
 
+	transform(fn: (path: Path) => Path) {
+		this._paths = this._paths.map(fn);
+	}
+
 	execute(command: Command) {
 		const newState = command.execute(this._paths.slice(0, this._cursor));
 		this._paths = newState;
