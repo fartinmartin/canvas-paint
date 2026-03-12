@@ -21,13 +21,17 @@ export function createBaseStyles(className: string, namespace: string) {
 
 export function createInstanceStyles(
 	id: string,
-	options: PaintOptions | { bgColor: string; width: number; height: number }
+	options: PaintOptions | { bgColor?: string; width: number; height: number; margin?: number }
 ) {
+	const margin = (options.margin ?? 0) * 2;
+	const totalWidth = options.width + margin;
+	const totalHeight = options.height + margin;
+
 	const styleSheet = createStyleElement(id);
 
 	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { background: ${options.bgColor}; }`, 0); // prettier-ignore
-	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { max-width: ${options.width}px; max-height: ${options.height}px; }`, 1); // prettier-ignore
-	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { aspect-ratio: ${options.width} / ${options.height}; }`, 2); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { max-width: ${totalWidth}px; max-height: ${totalHeight}px; }`, 1); // prettier-ignore
+	replaceRule(styleSheet.sheet!, `[data-${namespace}id="${id}"] { aspect-ratio: ${totalWidth} / ${totalHeight}; }`, 2); // prettier-ignore
 
 	return styleSheet.sheet;
 }

@@ -5,6 +5,7 @@ export type CanvasOptions = {
 	height: number;
 	bgColor?: string;
 	debounce?: number;
+	margin?: number;
 };
 
 export class Canvas {
@@ -57,7 +58,8 @@ export class Canvas {
 	}
 
 	get scale() {
-		return this.root.clientWidth / this.options.width;
+		const margin = (this.options.margin ?? 0) * 2;
+		return this.root.clientWidth / (this.options.width + margin);
 	}
 
 	clear() {
