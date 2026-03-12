@@ -22,6 +22,7 @@ export type BrushOptions = {
 		radius?: number;
 		enabled?: boolean;
 		initialPoint?: Coordinates;
+		lerpFactor?: number; // multiplier on how far you must draw before reaching full radius. default: 1
 	};
 };
 
@@ -45,6 +46,7 @@ export class Brush {
 	private _tolerance: number;
 
 	private _targetRadius: number;
+	private _lerpFactor: number;
 	private _strokeDistance: number = 0;
 
 	private _lazy: LazyBrush;
@@ -55,6 +57,7 @@ export class Brush {
 
 	constructor(private root: HTMLElement, options: BrushOptions) {
 		this._targetRadius = options.lazy?.radius ?? 0;
+		this._lerpFactor = options.lazy?.lerpFactor ?? 1;
 
 		this._lazy = new LazyBrush({
 			enabled: options.lazy?.enabled ?? true,
@@ -163,6 +166,14 @@ export class Brush {
 		this.events.dispatch("brushUpdate", this.payload);
 	}
 
+	get lerpFactor() {
+		return this._lerpFactor;
+	}
+
+	set lerpFactor(value: number) {
+		this._lerpFactor = Math.max(0.1, value);
+	}
+
 	get lazy() {
 		// we need access to our LazyBrush (at least the x and y values), but we don't want to allow anyone to change settings w/o us knowing!
 		return this._lazy;
@@ -191,7 +202,7 @@ export class Brush {
 			const dx = coords.x - prev.x;
 			const dy = coords.y - prev.y;
 			this._strokeDistance += Math.sqrt(dx * dx + dy * dy);
-			const t = Math.min(this._strokeDistance / this._targetRadius, 1);
+			const t = Math.min(this._strokeDistance / (this._targetRadius * this._lerpFactor), 1);
 			this._lazy.setRadius(t * this._targetRadius);
 		}
 
