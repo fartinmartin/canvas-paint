@@ -39,6 +39,10 @@ button:is(:not(:last-child)) {
 	border-right: 0;
 }
 
+#controls .row:not(:last-child) > * {
+	border-bottom: 0;
+}
+
 button:hover {
 	background-color: lightgray;
 }
@@ -134,7 +138,6 @@ section {
 #controls > div {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
 	margin-bottom: 0.5rem;
 }
 
