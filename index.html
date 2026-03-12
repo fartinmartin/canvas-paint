@@ -32,6 +32,8 @@
 					<div class="radius">
 						<button onclick="demo.brush.radius--">radius-</button>
 						<button onclick="demo.brush.radius++">radius+</button>
+						<button onclick="demo.brush.lerpFactor -= 0.5">lerp-</button>
+						<button onclick="demo.brush.lerpFactor += 0.5">lerp+</button>
 					</div>
 					<div class="tolerance">
 						<button onclick="demo.brush.tolerance--">tolerance-</button>
@@ -108,6 +110,7 @@
 					<tr><th>pointer</th><td>${fmt(pointer.x)}, ${fmt(pointer.y)}</td></tr>
 					<tr><th>brush</th><td>${fmt(brush.x)}, ${fmt(brush.y)}</td></tr>
 					<tr><th>radius</th><td>${fmt(currentRadius)} / ${fmt(targetRadius)}</td></tr>
+					<tr><th>lerpFactor</th><td>${fmt(demo.brush.lerpFactor)}</td></tr>
 					<tr><th>drawing</th><td>${demo.brush.isDrawing}</td></tr>
 				`.trim();
 
