@@ -38,7 +38,7 @@ export class UI extends Canvas {
 	drawInterface() {
 		const { ui } = this.options;
 
-		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.clear();
 
 		if (ui?.show === false) return;
 

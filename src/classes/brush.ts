@@ -72,29 +72,30 @@ export class Brush {
 		this._join = options.brush?.join ?? "round";
 		this._tolerance = options.brush?.tolerance ?? 30;
 
+		// Bind handlers once so the same function reference is used for both add and remove
 		this._listeners = [
-			{ event: "mousedown", handler: this.handleDown },
-			{ event: "touchstart", handler: this.handleDown },
+			{ event: "mousedown", handler: this.handleDown.bind(this) },
+			{ event: "touchstart", handler: this.handleDown.bind(this) },
 			//
-			{ event: "mouseup", handler: this.handleUp },
-			{ event: "touchend", handler: this.handleUp },
+			{ event: "mouseup", handler: this.handleUp.bind(this) },
+			{ event: "touchend", handler: this.handleUp.bind(this) },
 			//
-			{ event: "mousemove", handler: this.handleMove },
-			{ event: "touchmove", handler: this.handleMove },
+			{ event: "mousemove", handler: this.handleMove.bind(this) },
+			{ event: "touchmove", handler: this.handleMove.bind(this) },
 			//
 			// TODO: consider window events, in order to let drawing continue past canvas el (perhaps with a limit of lazy.radius?)
-			{ event: "mouseleave", handler: this.handleLeave },
-			{ event: "touchcancel", handler: this.handleLeave },
+			{ event: "mouseleave", handler: this.handleLeave.bind(this) },
+			{ event: "touchcancel", handler: this.handleLeave.bind(this) },
 		];
 
 		this._listeners.forEach(({ event, handler }) =>
-			this.root.addEventListener(event, handler.bind(this))
+			this.root.addEventListener(event, handler)
 		);
 	}
 
 	removeAllListeners() {
 		this._listeners.forEach(({ event, handler }) =>
-			this.root.removeEventListener(event, handler.bind(this))
+			this.root.removeEventListener(event, handler)
 		);
 	}
 

@@ -62,10 +62,6 @@ export class AddPath extends Command {
 }
 
 export class AddClear extends Command {
-	constructor() {
-		super();
-	}
-
 	execute(state: Path[]) {
 		const points = [new Point(0, 0, "transparent", 0)];
 		const path = new Path(points, "clear", 1, "round", "round", 0);
