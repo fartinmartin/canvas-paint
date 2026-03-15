@@ -171,3 +171,17 @@ section {
 	vertical-align: middle;
 	pointer-events: none;
 }
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+button[disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+button[disabled] .remix {
+	animation: spin 0.75s linear infinite;
+	transform-origin: center;
+}

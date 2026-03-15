@@ -4,7 +4,6 @@ import { Path } from './path';
 import { Point } from './point';
 
 import { getMidCoords, scalePath } from '../utils/points';
-import { namespace } from '../utils/uuid';
 import { sleep } from 'radash';
 
 import FloodFill from 'q-floodfill';
@@ -46,7 +45,7 @@ export class CanvasDraw extends Canvas {
 		const { size, color } = point;
 
 		// we need to see the temp canvas paint erasing paths
-		const isTemp = this.canvas.classList.contains(`${namespace}temp`);
+		const isTemp = this.className === "temp";
 		this.context.globalCompositeOperation =
 			isTemp || mode !== 'erase' ? 'source-over' : 'destination-out';
 
@@ -98,24 +97,25 @@ export class CanvasDraw extends Canvas {
 	}
 
 	protected drawFill(path: Path) {
-		if (this.canvas.className === `${namespace}temp`) return;
+		if (this.className === "temp") return;
 
 		const context = this.context;
 
 		// Clip to document area so fill can't bleed into the margin.
 		// When margin is 0 this is identical to reading the full canvas.
+		const dpr = globalThis.devicePixelRatio ?? 1;
 		const margin = this.options.margin ?? 0;
 		const scale = this.scale;
-		const marginPx = Math.round(margin * scale * devicePixelRatio);
-		const docW = Math.round(this.options.width * scale * devicePixelRatio);
-		const docH = Math.round(this.options.height * scale * devicePixelRatio);
+		const marginPx = Math.round(margin * scale * dpr);
+		const docW = Math.round(this.options.width * scale * dpr);
+		const docH = Math.round(this.options.height * scale * dpr);
 
 		const imageData = context.getImageData(marginPx, marginPx, docW, docH);
 
 		const { x: originalX, y: originalY, color: fillColor } = path.points[0];
 		// canvas imageData is at physical pixel resolution; adjust coords for margin offset
-		const x = Math.round(originalX * devicePixelRatio) - marginPx;
-		const y = Math.round(originalY * devicePixelRatio) - marginPx;
+		const x = Math.round(originalX * dpr) - marginPx;
+		const y = Math.round(originalY * dpr) - marginPx;
 
 		const floodFill = new FloodFill(imageData);
 		floodFill.isSameColor = isSameColor;

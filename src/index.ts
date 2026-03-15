@@ -18,6 +18,9 @@ import { scalePoint, simplifyPoints } from "./utils/points";
 export type PaintOptions = CanvasOptions & BrushOptions & UIOptions & GridOptions; // prettier-ignore
 export type PlaybackOptions = { delay?: number; duration?: number };
 
+export type { VideoEncodeOpts, VideoOptions } from "./utils/video";
+import { browserEncode, type VideoOptions } from "./utils/video";
+
 export class Paint {
 	static className = namespace + "container";
 	static baseStyles = createBaseStyles(Paint.className, namespace)!;
@@ -287,67 +290,86 @@ export class Paint {
 		this.events.dispatch("drawn", () => {});
 	}
 
-	async toVideo(options: PlaybackOptions & { fps?: number } = {}): Promise<Blob> {
+	async toVideo(options: VideoOptions = {}): Promise<Blob> {
+		const dpr = globalThis.devicePixelRatio ?? 1;
 		const delay = this.resolveDelay(options) ?? 10;
 		const fps = options.fps ?? 60;
 
 		const margin = this.options.margin ?? 0;
-		const scale = this.scale;
+		const scale = this.scale || 1; // fall back to 1 when there is no DOM (server-side)
 		const docWidth = this.options.width * scale;
 		const docHeight = this.options.height * scale;
-		const sx = margin * scale * devicePixelRatio;
-		const sy = margin * scale * devicePixelRatio;
-		const sw = docWidth * devicePixelRatio;
-		const sh = docHeight * devicePixelRatio;
 
-		const recording = document.createElement("canvas");
-		recording.width = docWidth;
-		recording.height = docHeight;
-		const ctx = recording.getContext("2d")!;
-		const { width, height } = recording;
+		const outputWidth = options.width ?? docWidth;
+		const outputHeight = options.height ?? docHeight;
 
-		const stream = recording.captureStream(fps);
-		const recorder = new MediaRecorder(stream);
-		const chunks: Blob[] = [];
-		recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+		const mkCanvas = options.createCanvas ?? ((w, h) => {
+			const c = document.createElement("canvas");
+			c.width = w; c.height = h;
+			return c;
+		});
 
-		// Composite artboard + temp onto the recording canvas each frame
-		let compositing = true;
-		const composite = () => {
-			ctx.fillStyle = this.options.bgColor ?? "transparent";
-			ctx.fillRect(0, 0, width, height);
-			ctx.drawImage(this.artboard.canvas, sx, sy, sw, sh, 0, 0, width, height);
-			ctx.drawImage(this.temp.canvas, sx, sy, sw, sh, 0, 0, width, height);
-			if (compositing) requestAnimationFrame(composite);
+		// Swap live canvases for offscreen ones so replay does not disturb the visible view
+		const saved = {
+			artboard: { canvas: this.artboard.canvas, context: this.artboard.context },
+			temp: { canvas: this.temp.canvas, context: this.temp.context },
 		};
+
+		const offArtboard = mkCanvas(saved.artboard.canvas.width, saved.artboard.canvas.height);
+		const offArtboardCtx = offArtboard.getContext("2d")!;
+		offArtboardCtx.scale(dpr, dpr);
+
+		const offTemp = mkCanvas(saved.temp.canvas.width, saved.temp.canvas.height);
+		const offTempCtx = offTemp.getContext("2d")!;
+		offTempCtx.scale(dpr, dpr);
+
+		this.artboard.canvas = offArtboard;
+		this.artboard.context = offArtboardCtx;
+		this.temp.canvas = offTemp;
+		this.temp.context = offTempCtx;
 
 		this.artboard.clear();
 		this.temp.clear();
-		requestAnimationFrame(composite);
-		recorder.start();
 
-		await this.replayHistory(delay);
-
-		// Wait for one final composite frame to capture the last artboard state
-		await new Promise<void>((r) => requestAnimationFrame(() => r()));
-
-		compositing = false;
-		recorder.stop();
-
-		return new Promise((resolve) => {
-			recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
+		const encode = options.encode ?? browserEncode;
+		const encoder = encode({
+			artboard: offArtboard,
+			temp: offTemp,
+			crop: {
+				sx: margin * scale * dpr,
+				sy: margin * scale * dpr,
+				sw: docWidth * dpr,
+				sh: docHeight * dpr,
+			},
+			width: outputWidth,
+			height: outputHeight,
+			bgColor: this.options.bgColor ?? "transparent",
+			fps,
+			mkCanvas,
 		});
+
+		try {
+			encoder.start();
+			await this.replayHistory(delay);
+			return await encoder.stop();
+		} finally {
+			this.artboard.canvas = saved.artboard.canvas;
+			this.artboard.context = saved.artboard.context;
+			this.temp.canvas = saved.temp.canvas;
+			this.temp.context = saved.temp.context;
+		}
 	}
 
 	async toBlob(type?: string | undefined, quality?: number) {
+		const dpr = globalThis.devicePixelRatio ?? 1;
 		const margin = this.options.margin ?? 0;
 		const scale = this.scale;
 		const docWidth = this.options.width * scale;
 		const docHeight = this.options.height * scale;
-		const sx = margin * scale * devicePixelRatio;
-		const sy = margin * scale * devicePixelRatio;
-		const sw = docWidth * devicePixelRatio;
-		const sh = docHeight * devicePixelRatio;
+		const sx = margin * scale * dpr;
+		const sy = margin * scale * dpr;
+		const sw = docWidth * dpr;
+		const sh = docHeight * dpr;
 
 		const canvas = document.createElement("canvas");
 		const context = canvas.getContext("2d")!;

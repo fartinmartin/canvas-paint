@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="./style.css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>canvas-paint ⬝ demo</title>
-		<script type="module" crossorigin src="./assets/index-Br6fSnzG.js"></script>
+		<script type="module" crossorigin src="./assets/index-Jysa8hXi.js"></script>
 	</head>
 	<body>
 		<header>
@@ -75,8 +75,8 @@
 					</div>
 					<div class="export">
 						<div class="row">
-							<button onclick="downloadImage()" title="download png"><svg class="remix"><use href="./remixicon.symbol.svg#ri-image-line"></use></svg></button>
-							<button onclick="downloadVideo()" title="download webm"><svg class="remix"><use href="./remixicon.symbol.svg#ri-video-download-line"></use></svg></button>
+							<button onclick="downloadImage(this)" title="download png"><svg class="remix"><use href="./remixicon.symbol.svg#ri-image-line"></use></svg></button>
+							<button onclick="downloadVideo(this)" title="download webm"><svg class="remix"><use href="./remixicon.symbol.svg#ri-video-download-line"></use></svg></button>
 						</div>
 					</div>
 					<div class="drawing">
@@ -216,26 +216,43 @@
 				syncActiveStates();
 			}
 
-			async function downloadImage() {
-				const blob = await demo.toBlob();
-
-				const downloadLink = document.createElement("a");
-				downloadLink.href = window.URL.createObjectURL(blob);
-				downloadLink.download = "canvas-paint.png";
-				downloadLink.click();
-
-				downloadLink.remove();
+			async function withLoading(btn, fn) {
+				const use = btn.querySelector("use");
+				const icon = use.getAttribute("href");
+				btn.disabled = true;
+				use.setAttribute("href", "/remixicon.symbol.svg#ri-loader-4-line");
+				try {
+					await fn();
+				} finally {
+					btn.disabled = false;
+					use.setAttribute("href", icon);
+				}
 			}
 
-			async function downloadVideo() {
-				const blob = await demo.toVideo({ delay: 10 });
+			async function downloadImage(btn) {
+				await withLoading(btn, async () => {
+					const blob = await demo.toBlob();
+					const a = document.createElement("a");
+					a.href = URL.createObjectURL(blob);
+					a.download = "canvas-paint.png";
+					a.click();
+					a.remove();
+				});
+			}
 
-				const downloadLink = document.createElement("a");
-				downloadLink.href = window.URL.createObjectURL(blob);
-				downloadLink.download = "canvas-paint.webm";
-				downloadLink.click();
-
-				downloadLink.remove();
+			async function downloadVideo(btn) {
+				await withLoading(btn, async () => {
+					const blob = await demo.toVideo({
+						delay: 10,
+						width: 1080,
+						height: 1080,
+					});
+					const a = document.createElement("a");
+					a.href = URL.createObjectURL(blob);
+					a.download = "canvas-paint.webm";
+					a.click();
+					a.remove();
+				});
 			}
 		</script>
 
